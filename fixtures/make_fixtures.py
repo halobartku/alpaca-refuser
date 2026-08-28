@@ -17,14 +17,14 @@ that killed v1 of this fixture.
 Only account.json differs between the two accounts (A.112/A.113): same
 market, different equity.
 
-DESIGN FINDING encoded here (do not silently patch): at $1M equity, 0.75%
+DESIGN FINDING (resolved by A.115, kept for the record): at $1M equity, 0.75%
 sizing demands >=15 contracts on any $5-wide spread (credit>0 => per-contract
-risk <$500 => 7500/PCR > 15), while MAX_NET_DELTA_ABS=30 shares allows at
-most ~10 (per-contract spread delta ~2.9 shares in the 0.15-0.25 delta band).
-So on the TESTER the net-delta gate always refuses full-size index entries —
-conservative by construction. The submission account ($100k, 2 contracts,
-~5.7 shares) is unaffected. Tester P&L therefore UNDERSTATES per-risk
-capacity; present results normalised per unit of risk (A.113).
+risk <$500 => 7500/PCR > 15), and the ORIGINAL absolute MAX_NET_DELTA_ABS=30
+shares allowed at most ~10 (per-contract spread delta ~2.9 shares in the
+0.15-0.25 delta band), so on the TESTER the net-delta gate always refused
+full-size index entries. A.115 made the cap equity-scaled (30 at $100k,
+300 at $1M — same fraction of the book, anchor-exact no-op for the judged
+$100k account), so the full-size path now runs and is tested.
 """
 import json
 import os

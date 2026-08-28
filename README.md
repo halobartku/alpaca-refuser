@@ -51,9 +51,11 @@ network, zero credentials):
   sizing is read from the account endpoint at decision time, never
   defaulted (the guard that prevents tester-calibrated runs leaking into
   the judged account).
-- Design finding, documented not patched: at $1M and 0.75% risk/trade,
-  sizing demands 20 contracts on a $5-wide spread, which the absolute
-  net-delta cap (±30 shares) refuses. Conservative by construction.
+- A.115: the net-delta cap scales with equity (±30 shares at $100k,
+  ±300 at $1M, same fraction of the book). Previously an absolute ±30
+  refused the $1M tester's full-size entries; now the full-size path is
+  exercised by the offline broker-path suite. The judged $100k account's
+  behaviour is bit-identical (pinned by boundary tests).
 
 ## Repository layout
 

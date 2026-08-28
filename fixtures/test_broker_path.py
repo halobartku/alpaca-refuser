@@ -22,7 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 
-from refuser import bs, gates, ordermech                    # noqa: E402
+from refuser import bs, gates, ordermech, portfolio as pf  # noqa: E402
 from refuser.broker import (BrokerError, AccountMismatch,   # noqa: E402
                             FixtureBroker, equity_now,
                             TESTER_ACCOUNT, SUBMISSION_ACCOUNT)
@@ -147,21 +147,30 @@ check("pct_risk_identical", abs(risk_100k / r_sub["equity"]
                                 - risk_1m / r1["equity"]) < 1e-9,
       f"{risk_100k / r_sub['equity']:.6%} vs {risk_1m / r1['equity']:.6%}")
 
-print("== T2b. DESIGN FINDING (A.113 world): absolute net-delta cap binds ==")
-print("     on the $1M tester at full 0.75% size -> the gates REFUSE and NO")
-print("     order is placed. Conservative by construction; documented, not")
-print("     patched. The submission account is unaffected. Decision on")
-print("     scaling the cap with equity belongs to Bartosz/Claude, not here.")
+print("== T2b. A.115 cap scaling: tester ($1M) now ACCEPTS at full size ==")
+print("     The net-delta cap scales with equity (30 shares at $100k,")
+print("     300 at $1M — same fraction of the book), so the full-size path")
+print("     is finally EXERCISABLE on the tester. The judged $100k account's")
+print("     behaviour is unchanged (T1 + the offline boundary tests pin it).")
 nd = [g for g in r1["eval"]["gates"] if g["gate"] == "net_delta"][0]
-check("tester_refused_by_net_delta", r1["eval"]["decision"] == "REFUSE"
-      and not nd["pass"], nd["detail"])
-check("tester_no_order", r1["receipt"] is None
-      and len(fx.placed_orders) == 0)
+check("tester_accepts_scaled_cap", r1["eval"]["decision"] == "ACCEPT"
+      and nd["pass"], nd["detail"])
+check("tester_order_placed", r1["receipt"] is not None
+      and r1["receipt"]["status"] == "accepted"
+      and len(fx.placed_orders) == 1,
+      f"order_id={r1['receipt'].get('order_id') if r1['receipt'] else None}")
 only_diff = [g1["gate"] for g1, g2 in zip(r_sub["eval"]["gates"],
                                           r1["eval"]["gates"])
              if g1["pass"] != g2["pass"]]
-check("sole_divergence_is_net_delta", only_diff == ["net_delta"],
+check("no_gate_divergence_same_signal", only_diff == [],
       f"diverging gates: {only_diff}")
+# cap coherence: same signal -> same projected net-delta fraction of equity
+pct_nd_100k = abs(pf.projected_net_delta(
+    {"net_delta": 0.0}, r_sub["intent"]["spread_delta"], n_100k)) / r_sub["equity"]
+pct_nd_1m = abs(pf.projected_net_delta(
+    {"net_delta": 0.0}, r1["intent"]["spread_delta"], n_1m)) / r1["equity"]
+check("net_delta_pct_identical", abs(pct_nd_100k - pct_nd_1m) < 1e-15,
+      f"{pct_nd_100k:.9%} vs {pct_nd_1m:.9%} of equity")
 
 print("== T3. Account guard: wrong expected number -> refuse, no order ==")
 fx3 = make_broker(TESTER_ACCOUNT)

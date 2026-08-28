@@ -329,6 +329,29 @@ check("net_delta_book_cross_refused", not ok, why)
 # INDEPENDENT ORACLE: shares-equivalent arithmetic by hand: 25 + 0.10*1*100 = 35
 check("net_delta_arithmetic", abs(pf.projected_net_delta(st5, 0.10, 1) - 35.0) < 1e-9)
 
+# A.115: the net-delta cap SCALES with equity — 30 shares at $100k, 300 at
+# $1M, same fraction of the book. Anchor division is float-exact at both
+# (30.0 / 300.0), which the boundary tests above depend on.
+check("net_delta_cap_anchor_100k", pf.net_delta_cap(100_000.0) == 30.0,
+      f"{pf.net_delta_cap(100_000.0)!r}")
+check("net_delta_cap_scales_1m", pf.net_delta_cap(1_000_000.0) == 300.0,
+      f"{pf.net_delta_cap(1_000_000.0)!r}")
+check("net_delta_cap_fraction_identical",
+      abs(pf.net_delta_cap(1_000_000.0) / 1_000_000.0
+          - pf.net_delta_cap(100_000.0) / 100_000.0) < 1e-15)
+check("net_delta_cap_failclosed", pf.net_delta_cap(0.0) == 0.0
+      and pf.net_delta_cap(-5_000.0) == 0.0)
+# same signal, $1M book: 30ct x 0.10 x 100 = +300 = exactly at the scaled cap
+st6 = dict(state); st6["equity"] = 1_000_000.0; st6["net_delta"] = 0.0
+ok, why = pf.gate_net_delta(st6, 0.10, 30)
+check("net_delta_1m_at_scaled_cap_passes", ok, why)
+ok, why = pf.gate_net_delta(st6, 0.10, 31)
+check("net_delta_1m_over_scaled_cap_refused", not ok, why)
+# the SAME trade that passed at $1M is refused at $100k (cap 30, not 300)
+st7 = dict(state); st7["equity"] = 100_000.0; st7["net_delta"] = 0.0
+ok, why = pf.gate_net_delta(st7, 0.10, 30)
+check("net_delta_100k_tightness_preserved", not ok, why)
+
 print("== 17. Design gap 2: selection (deterministic composite) ==")
 cands = [
     {"name": "SPY", "atm_iv": 0.22, "rel_spread": 0.10, "earnings_clear_days": 99},

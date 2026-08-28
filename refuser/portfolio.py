@@ -20,9 +20,28 @@ break alphabetically for full determinism. Same input -> same output, always.
 """
 from refuser import universe as U
 
-# Portfolio-level net-delta cap (shares-equivalent). Mirrored in gates.py as
-# MAX_NET_DELTA_ABS; defined here to avoid a circular import.
+# Portfolio-level net-delta cap (shares-equivalent), A.115: cap SCALES with
+# equity so it is a coherent fraction of the book, anchored so that $100k
+# yields exactly the historical +/-30 shares (cap = equity * 3 / 10000:
+# 30 at $100k, 300 at $1M). This is a NO-OP for the judged $100k account
+# (PA3YVMJ3YVDZ) and unblocks the $1M tester's full-size path, which was
+# previously untestable under the absolute cap. Mirrored in gates.py as
+# MAX_NET_DELTA_ABS (the $100k anchor); defined here to avoid a circular
+# import.
 NET_DELTA_CAP = 30
+NET_DELTA_CAP_EQUITY_ANCHOR = 100_000.0
+
+
+def net_delta_cap(equity: float) -> float:
+    """A.115: cap_shares = equity / (100000/30) — 30.0 at $100k, 300.0 at
+    $1M, float-exact at both anchors (verified: anchor division, unlike
+    multiplying by 30/100000, returns exactly 30.0/300.0 — this matters
+    because the old absolute boundary tests must not flip on float dust).
+    Fail-closed: equity <= 0 -> 0.0 (nothing can be added to a book with
+    no positive equity)."""
+    if equity <= 0:
+        return 0.0
+    return equity / (NET_DELTA_CAP_EQUITY_ANCHOR / NET_DELTA_CAP)
 
 # --- gap 1: correlation ------------------------------------------------------
 
@@ -62,8 +81,12 @@ def projected_net_delta(state, spread_delta: float, contracts: int) -> float:
     return state["net_delta"] + spread_delta * contracts * 100.0
 
 
-def gate_net_delta(state, spread_delta: float, contracts: int,
-                   cap: float = NET_DELTA_CAP):
+def gate_net_delta(state, spread_delta: float, contracts: int, cap: float = None):
+    """A.115: cap scales with equity (30 at $100k, 300 at $1M). `cap` may be
+    pinned explicitly for boundary tests; default derives from the SAME
+    decision-time equity the sizing uses, never a stale default."""
+    if cap is None:
+        cap = net_delta_cap(state["equity"])
     p = projected_net_delta(state, spread_delta, contracts)
     # epsilon: 0.10*3*100 = 30.000000000000004 in IEEE754 — a boundary must
     # not flip on float dust (exactly-at-cap passes by design)

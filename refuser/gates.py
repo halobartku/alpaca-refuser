@@ -15,7 +15,10 @@ MAX_CONCURRENT = 6           # position slots
 MAX_PORTFOLIO_HEAT = 0.09    # sum of per-trade risk <= 9% of equity
 DAILY_STOP = 0.015           # -1.5% day => no new entries rest of day
 MAX_NET_DELTA_ABS = 30       # portfolio-level correlation cap (SPY+QQQ+IWM
-                             # short puts = one beta bet; cap the aggregate)
+                             # short puts = one beta bet; cap the aggregate).
+                             # A.115: this is now the $100k ANCHOR — the live
+                             # cap scales with equity via pf.net_delta_cap()
+                             # (30 at $100k judged acct, 300 at $1M tester).
 
 
 def gate_dte(expiry, today):

@@ -48,7 +48,7 @@ discipline is not risk decoration, it is the edge.
 | 5 | Underlying | last ≥ $40 | sub-penny-tick landmines |
 | 6 | Calendar | Mon/Wed 10:05–15:00 ET, no earnings within DTE+3 (unknown date = refuse), NFP blackout | bad timing, unknown data |
 | 7 | IV regime | ATM IV ≥ 18%, SPY IV > 5d avg | no premium worth harvesting |
-| 8 | Portfolio | ≤ 6 slots, 1/name, heat ≤ 9%, ≤ 2 per correlated beta-group, net delta ≤ ±30 shares | concentration, one-beta book |
+| 8 | Portfolio | ≤ 6 slots, 1/name, heat ≤ 9%, ≤ 2 per correlated beta-group, net delta ≤ ±3 bp-of-equity in shares (±30 shares at $100k, ±300 at $1M) | concentration, one-beta book |
 
 **Fail-closed is absolute:** unknown earnings date, missing snapshot,
 account mismatch, broker error — every one is a refusal. A wrong number
@@ -80,9 +80,11 @@ post-mortem. Tamper-evident; `verify.py` replay for judges.
 
 - Free-tier quotes are 15-min delayed indicative derivatives → we reprice
   off the live underlying and disclose the flat-sigma assumption.
-- Absolute net-delta cap (±30 shares) binds at high equity: on a $1M
-  account, 0.75% sizing (≥15 contracts, $5-wide) is refused by design.
-  Conservative by construction; the judged $100k account is unaffected.
+- Net-delta cap scales with equity (±30 shares at $100k, ±300 at $1M —
+  same fraction of the book, anchored so the judged account is unaffected).
+  Earlier this was an absolute ±30 that refused full-size entries on a $1M
+  tester; scaling made the cap coherent across equities and the full-size
+  path testable.
 - Earnings dates are a hand-maintained map (free tier has no calendar
   API); unknown date = refuse, re-verified Sundays.
 - No convexity sleeve. Week 1 is the discipline proof; whether theta
