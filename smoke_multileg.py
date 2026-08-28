@@ -117,8 +117,14 @@ def phase1(b):
         delta_short=round(d_s, 3), delta_long=round(d_l, 3),
         sym_short=sym_s, sym_long=sym_l)
 
-    # 6. our mark vs stale quote mid
-    mark = put_spread_mark(S, k_short, k_long, T, R_FREE, sigma)
+    # 6. our mark vs stale quote mid — SKEW-AWARE (per-leg snapshot IV).
+    #    LIVE FINDING 2026-08-28: flat-sigma mark was 2.05 vs 1.18 tradeable
+    #    (74% divergence => gate refuses everything). Per-leg IVs fix it.
+    iv_s = ivs.get(k_short) or sigma
+    iv_l = ivs.get(k_long) or sigma
+    p_s = bs_greeks(S, k_short, T, R_FREE, iv_s, "P")[0]
+    p_l = bs_greeks(S, k_long, T, R_FREE, iv_l, "P")[0]
+    mark = p_s - p_l
     snap2 = b.get_option_snapshot([sym_s, sym_l])
     def mid_of(sym):
         qo = (snap2.get(sym) or {}).get("latestQuote") or (snap2.get(sym) or {}).get("indicativeQuote") or {}
