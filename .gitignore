@@ -8,3 +8,9 @@ acct_*/
 decisions.jsonl
 keys/
 SUBMISSION_RECEIPT.md
+
+smoke_result_*.jsonl
+smoke_ctx.json
+smoke_order_id.txt
+PLAYBOOK.md
+reconcile_sim.py

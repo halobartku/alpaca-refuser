@@ -101,15 +101,24 @@ class AlpacaBroker(BaseBroker):
                 return out
 
     def get_option_snapshot(self, symbols):
+        """Unwraps the {snapshots:{...}, next_page_token} envelope and
+        paginates. LIVE-FIX 2026-08-28 smoke test: the envelope shape was
+        assumption L3 and the flat-dict reading returned nothing pre-open."""
         if isinstance(symbols, str):
             symbols = [symbols]
-        joined = ",".join(symbols)
-        snap = self._get(
-            f"{self.DATA}/v1beta1/options/snapshots",
-            {"symbols": joined, "feed": "indicative"})
-        if not snap:
-            raise BrokerError(f"empty snapshot for {joined}")
-        return snap
+        out, token = {}, None
+        while True:
+            params = {"symbols": ",".join(symbols), "feed": "indicative"}
+            if token:
+                params["page_token"] = token
+            page = self._get(f"{self.DATA}/v1beta1/options/snapshots", params)
+            out.update(page.get("snapshots") or {})
+            token = page.get("next_page_token")
+            if not token:
+                break
+        if not out:
+            raise BrokerError(f"empty snapshot for {','.join(symbols)[:80]}")
+        return out
 
     def get_underlying_quote(self, symbol):
         q = self._get(
@@ -131,7 +140,15 @@ class AlpacaBroker(BaseBroker):
 
     def place_option_order(self, plan: dict) -> dict:
         """plan comes from ordermech.order_plan + symbols. Multileg credit
-        spread: sell short-strike put, buy long-strike put, 1:1."""
+        spread: sell short-strike put, buy long-strike put, 1:1.
+
+        PAYLOAD VERIFIED LIVE 2026-08-28 13:50 UTC on the tester (order
+        ceae4490, filled 0.4s). Schema notes the docs half-state:
+          - order_class='mleg' (NOT 'class'), type='limit' (NOT 'order_type')
+          - qty and ratio_qty as STRINGS
+          - limit_price NEGATIVE = credit, positive = debit (mleg convention)
+          - legs carry side (buy/sell) AND position_intent (sell_to_open etc.)
+        """
         if plan.get("decision") != "SUBMIT":
             raise BrokerError("place_option_order requires a SUBMIT plan")
         for k in ("symbols_short", "symbols_long", "limit_credit",
@@ -139,16 +156,16 @@ class AlpacaBroker(BaseBroker):
             if k not in plan:
                 raise BrokerError(f"order plan missing {k!r}")
         payload = {
-            "order_type": "limit",
+            "type": "limit",
             "time_in_force": "day",
-            "qty": plan["contracts"],
-            "class": "multileg",
-            "limit_price": f"{plan['limit_credit']:.2f}",
+            "order_class": "mleg",
+            "qty": str(plan["contracts"]),
+            "limit_price": f"-{plan['limit_credit']:.2f}",
             "legs": [
-                {"symbol": plan["symbols_short"], "side": "sell_to_open",
-                 "ratio_qty": 1, "position_intent": "sell_to_open"},
-                {"symbol": plan["symbols_long"], "side": "buy_to_open",
-                 "ratio_qty": 1, "position_intent": "buy_to_open"},
+                {"symbol": plan["symbols_short"], "ratio_qty": "1",
+                 "side": "sell", "position_intent": "sell_to_open"},
+                {"symbol": plan["symbols_long"], "ratio_qty": "1",
+                 "side": "buy", "position_intent": "buy_to_open"},
             ],
         }
         r = requests.post(f"{self.TRADING}/v2/orders", headers=self._h(),
