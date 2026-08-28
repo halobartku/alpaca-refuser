@@ -27,14 +27,25 @@ guess. Built for the Alpaca "Options Alpha Agents" hackathon, Sept 2026.
 python3 run_tests.py
 ```
 
-91 checks across the core engine and the full offline trading path
-(through a fixture-driven broker adapter — zero network, zero credentials):
+112 checks across the core engine, the full offline trading path, and the
+evidence harness (all through a fixture-driven broker adapter — zero
+network, zero credentials):
 
 - Black-Scholes repricer validated against Hull's canonical example and
   put-call parity across a 144-point grid (max error 1.4e-14).
 - 8-entry gate stack, fail-closed: all gates run, all failures reported.
 - Exit engine: 6 rules in priority order, first-hit-fires.
 - Hash-chained decision log: single-byte tamper flips raise on reload.
+- Audit producers (`refuser/audit.py`): the only layer allowed to write
+  the decision log — session open (account assertion), gate anatomy,
+  order ticket with measured slippage, fill with GTC-exit-at-fill,
+  exit scans, post-mortem. The composition contract (order only if
+  gates ACCEPT **and** ordermech SUBMITS) is tested on both refusal
+  branches, not just the happy path.
+- Daily evidence digest (`refuser/digest.py` + `python3 verify.py`):
+  renders the verified chain into the one-page daily artifact —
+  per-decision data, gates, tickets, fills, exits — in the per-unit-of-
+  risk framing. `verify.py` is the judge's one-command chain check.
 - The both-equities sizing test: the same signal on $100k and $1M
   accounts produces exactly 10x contracts and identical percentage risk —
   sizing is read from the account endpoint at decision time, never
@@ -56,10 +67,14 @@ refuser/           core engine (no I/O except the decision log)
   ordermech.py     quote integrity, limit construction, penny walk policy
   universe.py      fixed 8-name universe + earnings/event calendar
   log.py           hash-chained append-only decision log
+  audit.py         the ONLY writers of that log: session, gate anatomy,
+                   tickets+slippage, fills, exit scans, post-mortems
+  digest.py        daily evidence digest (renders the verified chain)
   reconcile.py     broker state overrides memory after restarts
   broker.py        THE seam: BaseBroker interface + FixtureBroker (offline)
   live.py          AlpacaBroker (live REST client) — swap-in, one line
-fixtures/          model-derived fixtures + full-path integration test
+fixtures/          model-derived fixtures + full-path integration tests
+verify.py          one-command hash-chain verification (for judges)
 run_tests.py       runs everything, one command, zero network
 ```
 

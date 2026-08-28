@@ -5,7 +5,9 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SUITES = ["test_offline.py", os.path.join("fixtures", "test_broker_path.py")]
+SUITES = ["test_offline.py",
+          os.path.join("fixtures", "test_broker_path.py"),
+          os.path.join("fixtures", "test_evidence.py")]
 
 fails = 0
 for suite in SUITES:
