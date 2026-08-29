@@ -7,7 +7,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 SUITES = ["test_offline.py",
           os.path.join("fixtures", "test_broker_path.py"),
-          os.path.join("fixtures", "test_evidence.py")]
+          os.path.join("fixtures", "test_evidence.py"),
+          os.path.join("fixtures", "test_r2_preflight_nfp.py")]
 
 fails = 0
 for suite in SUITES:

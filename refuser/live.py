@@ -134,6 +134,37 @@ class AlpacaBroker(BaseBroker):
     def get_positions(self):
         return self._get(f"{self.TRADING}/v2/positions")
 
+    def get_configurations(self) -> dict:
+        """§8.2 trap surface: suspend_trade & friends. GET only."""
+        return self._get(f"{self.TRADING}/v2/account/configurations")
+
+    def set_suspend_trade(self, value: bool) -> dict:
+        """PATCH /v2/account/configurations {suspend_trade: bool}. Only ever
+        called with False by preflight (clearing a block, never adding one).
+        Shape live-verified on the tester 2026-08-29 (GET; PATCH mirrors the
+        documented config object)."""
+        r = requests.patch(
+            f"{self.TRADING}/v2/account/configurations",
+            headers=self._h(), data=json.dumps({"suspend_trade": bool(value)}),
+            timeout=self.TIMEOUT)
+        if r.status_code != 200:
+            raise BrokerError(
+                f"PATCH configurations -> {r.status_code}: {r.text[:200]}")
+        return r.json()
+
+    def place_closing_order(self, ticket: dict) -> dict:
+        """R2 liquidation ticket (single-leg or mleg close). Same mleg
+        conventions as place_option_order; strip the _meta audit key before
+        sending. Debit limit is POSITIVE (we pay), credit close negative —
+        the ticket's limit_price string is passed through as-shaped."""
+        payload = {k: v for k, v in ticket.items() if not k.startswith("_")}
+        r = requests.post(f"{self.TRADING}/v2/orders", headers=self._h(),
+                          data=json.dumps(payload), timeout=self.TIMEOUT)
+        if r.status_code not in (200, 201):
+            raise BrokerError(
+                f"closing order rejected {r.status_code}: {r.text[:300]}")
+        return r.json()
+
     def get_open_orders(self):
         return self._get(f"{self.TRADING}/v2/orders",
                          {"status": "open", "limit": 500})

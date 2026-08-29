@@ -121,6 +121,7 @@ class FixtureBroker(BaseBroker):
         self.account_number = account_number
         self.placed_orders = []      # records every ticket, for assertions
         self.cancelled = []
+        self._suspend_patched_to = None
 
     def _load(self, fname):
         path = os.path.join(self.dir, fname)
@@ -159,6 +160,31 @@ class FixtureBroker(BaseBroker):
 
     def get_positions(self):
         return self._load("positions.json")
+
+    # -- configurations seam (§8.2 suspend_trade trap) --------------------
+
+    def get_configurations(self) -> dict:
+        path = os.path.join(self.dir, "configurations.json")
+        if not os.path.exists(path):
+            # default healthy shape (live tester GET 2026-08-29)
+            return {"suspend_trade": False, "no_shorting": False,
+                    "fractional_trading": True, "max_margin_multiplier": "4",
+                    "closing_transactions_only": False}
+        with open(path) as f:
+            return json.load(f)
+
+    def set_suspend_trade(self, value: bool) -> dict:
+        self._suspend_patched_to = bool(value)   # assertable in tests
+        return {"suspend_trade": bool(value)}
+
+    def place_closing_order(self, ticket: dict):
+        if not ticket.get("legs"):
+            raise BrokerError("closing ticket has no legs")
+        rec = {k: v for k, v in ticket.items() if not k.startswith("_")}
+        rec["status"] = getattr(self, "_next_close_status", "filled")
+        rec["id"] = f"fxc-{len(self.placed_orders) + 1:04d}"
+        self.placed_orders.append(rec)
+        return rec
 
     def get_open_orders(self):
         return self._load("open_orders.json")
