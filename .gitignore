@@ -15,3 +15,8 @@ smoke_order_id.txt
 PLAYBOOK.md
 reconcile_sim.py
 core
+
+# never commit process core dumps - they contain the full environment block (secret leak 2026-08-29)
+core
+core.*
+*.core
