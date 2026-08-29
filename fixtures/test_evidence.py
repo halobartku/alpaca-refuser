@@ -108,11 +108,37 @@ check("slippage_measured", "vs_quoted" in B(t)["slippage"]
       f"captured {B(t)['slippage']['captured_frac']}")
 check("order_reached_broker", len(broker.placed_orders) == 1)
 
-print("== E4. fill: GTC exit placed at fill time ==")
+print("== E4. fill + GTC exit ACTUALLY PLACED at fill time ==")
 posplan = exits.open_position_plan(ev, ev["contracts"])
 f = trail.fill(posplan, B(t)["receipt"]["order_id"])
-check("fill_recorded", B(f)["event"] == "fill"
-      and B(f)["position"]["gtc_exit"]["placed_at"] == "fill")
+check("fill_recorded", B(f)["event"] == "fill")
+g = trail.place_gtc_exit(posplan, "SPY260925P05175000",
+                         "SPY260925P05125000")
+check("gtc_placed_recorded", B(g)["event"] == "gtc_exit" and B(g)["ok"]
+      and B(g)["limit"] == exits.gtc_target_price(mark))
+check("gtc_reached_broker", len(broker.placed_orders) == 2)  # entry + gtc
+gtc_ticket = broker.placed_orders[1]
+check("gtc_ticket_shape", gtc_ticket["time_in_force"] == "gtc"
+      and gtc_ticket["order_class"] == "mleg"
+      and float(gtc_ticket["limit_price"])
+      == exits.gtc_target_price(mark)
+      and {l["position_intent"] for l in gtc_ticket["legs"]}
+      == {"buy_to_close", "sell_to_close"})
+check("gtc_limit_is_50pct_credit",
+      abs(exits.gtc_target_price(mark) - 0.5 * mark) < 0.01)
+
+print("== E4b. digest NEGATIVE: fill without placed GTC must NOT claim one ==")
+d3 = tempfile.mkdtemp(prefix="refuser_gtcneg_")
+logpath3 = os.path.join(d3, "decisions.jsonl")
+fxn = FixtureBroker(tempfile.mkdtemp(prefix="refuser_gtcnegfx_"),
+                    SUBMISSION_ACCOUNT)
+make_fixtures.write_fixture_broker(fxn.dir, SUBMISSION_ACCOUNT)
+trail3 = AuditTrail(fxn, DecisionLog(logpath3))
+trail3.session_open(SUBMISSION_ACCOUNT, role="neg")
+trail3.fill(posplan, "no-gtc-order")
+md3 = digest.render(logpath3)
+check("no_false_gtc_claim", "no GTC exit placement on record" in md3
+      and "GTC exit resting" not in md3)
 
 print("== E5. exit scan on the open position (mark far from target: hold) ==")
 pos_live = {"name": "SPY", "expiry": date(2026, 9, 25),

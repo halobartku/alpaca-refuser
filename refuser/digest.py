@@ -38,6 +38,9 @@ def render(path: str) -> str:
     scans = [r for r in rows if r.get("event") == "exit_scan"]
     sessions = [r for r in rows if r.get("event") == "session_open"]
     posts = [r for r in rows if r.get("event") == "postmortem"]
+    gtcs = [r for r in rows if r.get("event") == "gtc_exit"]
+    r2s = [r for r in rows if r.get("event") == "r2_liquidation"]
+    verifies = [r for r in rows if r.get("event") == "r2_verify_flat"]
 
     L = []
     L.append("# Daily evidence digest")
@@ -101,11 +104,22 @@ def render(path: str) -> str:
         L.append("_no positions today_")
     for r in fills:
         pos = r.get("position", {})
-        g = pos.get("gtc_exit", {})
-        L.append(f"- 🔓 FILL {pos.get('contracts')}x "
-                 f"**{pos.get('name')}** credit "
-                 f"${_r0(pos.get('entry_credit', 0))} — GTC exit resting "
-                 f"at ${g.get('limit')} (placed at fill)")
+        # GTC exits render ONLY from placed gtc_exit records — the fill plan
+        # alone proves nothing was placed (2026-08-29 correctness fix).
+        gtc = next((g for g in gtcs
+                    if g.get("name") == pos.get("name")), None)
+        if gtc and gtc.get("ok"):
+            L.append(f"- 🔓 FILL {pos.get('contracts')}x "
+                     f"**{pos.get('name')}** credit "
+                     f"${_r0(pos.get('entry_credit', 0))} — GTC exit "
+                     f"**placed** at ${gtc.get('limit')} "
+                     f"({(gtc.get('receipt') or {}).get('id')})")
+        else:
+            L.append(f"- 🔓 FILL {pos.get('contracts')}x "
+                     f"**{pos.get('name')}** credit "
+                     f"${_r0(pos.get('entry_credit', 0))} — "
+                     f"⚠️ **no GTC exit placement on record** "
+                     f"(position must not stay open)")
     for r in scans:
         fired = r.get("fired", [])
         if not fired:
@@ -116,6 +130,31 @@ def render(path: str) -> str:
                      f"{d.get('name')} → {d.get('action')} "
                      f"@ ${d.get('limit')} — {d.get('note')}")
     L.append("")
+
+    # -- R2 liquidation (PLAYBOOK §2: judged P&L = realized P&L) -----------
+    if r2s:
+        L.append(f"## R2 liquidation ({len(r2s)})")
+        L.append("")
+        for r in r2s:
+            if not r.get("ok"):
+                L.append(f"- 🚫 **R2 FAILURE** — {r.get('error')}")
+                continue
+            closed = ", ".join(
+                f"{c.get('symbol')}×{c.get('qty')} "
+                f"({c.get('status')})" for c in r.get("closed", []))
+            L.append(f"- 🧹 R2 flatten: {len(r.get('cancelled', []))} orders "
+                     f"cancelled, closed: {closed or 'nothing to liquidate'}"
+                     + (f", **{len(r.get('failed', []))} FAILED**"
+                        if r.get("failed") else ""))
+        for r in verifies:
+            if r.get("ok"):
+                L.append(f"- ✅ verify-flat 10:55–11:00 ET: "
+                         f"residual {r.get('residual') or '[]'} — "
+                         f"**judged P&L = realized P&L**")
+            else:
+                L.append(f"- 🚫 verify-flat: residual positions "
+                         f"{r.get('residual')} — judged P&L ≠ realized")
+        L.append("")
     L.append("_AI-authored trading agent; disclosure and method in "
              "WRITEUP.md. P&L on the tester account understates per-risk "
              "capacity — read every number per unit of risk (A.113)._")

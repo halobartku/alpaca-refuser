@@ -10,7 +10,9 @@ pinned in fixtures/test_broker_path.py:
 This module never imports a concrete broker; it takes the BaseBroker seam,
 so the same producers run offline (FixtureBroker) and live (AlpacaBroker).
 """
-from refuser import exits, gates, ordermech
+import time as _time
+
+from refuser import exits, gates, liquidate, ordermech
 from refuser.log import DecisionLog
 
 
@@ -98,12 +100,56 @@ class AuditTrail:
         })
 
     def fill(self, position_plan: dict, order_id: str) -> dict:
-        """Position-opened record: the GTC profit-taking exit is placed AT
-        FILL TIME (rule 1: a position is never alive without its exit)."""
+        """Position-opened record (the plan; proves nothing was PLACED)."""
         return self.log.append({
             "event": "fill",
             "order_id": order_id,
             "position": position_plan,
+        })
+
+    def place_gtc_exit(self, position_plan: dict, sym_short: str,
+                       sym_long: str) -> dict:
+        """Rule 1 (exits.py): a position is NEVER alive without its resting
+        exit. Actually PLACES the GTC buy-to-close companion at the broker AT
+        FILL TIME and logs the receipt (2026-08-29 correctness fix: the digest
+        used to render 'GTC exit resting at $X' from the plan alone — a claim
+        no code path backed. A fill record alone now renders nothing).
+
+        Fail-closed: if the broker rejects the GTC ticket the error is logged
+        and re-raised — the runtime must close the fresh position immediately
+        rather than keep it naked. The digest renders GTC exits ONLY from
+        these records.
+        """
+        g = position_plan["gtc_exit"]
+        ticket = {
+            "type": "limit",
+            "time_in_force": "gtc",
+            "order_class": "mleg",
+            "qty": str(position_plan["contracts"]),
+            "limit_price": f"{g['limit']:.2f}",
+            "legs": [
+                {"symbol": sym_short, "ratio_qty": "1", "side": "buy",
+                 "position_intent": "buy_to_close"},
+                {"symbol": sym_long, "ratio_qty": "1", "side": "sell",
+                 "position_intent": "sell_to_close"},
+            ],
+            "_meta": {"kind": "gtc-exit-companion", "placed_at": "fill"},
+        }
+        try:
+            receipt = self.broker.place_closing_order(ticket)
+        except Exception as e:
+            self.log.append({
+                "event": "gtc_exit", "ok": False,
+                "name": position_plan.get("name"),
+                "error": f"{type(e).__name__}: {e}",
+            })
+            raise
+        return self.log.append({
+            "event": "gtc_exit", "ok": True,
+            "name": position_plan.get("name"),
+            "contracts": position_plan["contracts"],
+            "limit": g["limit"],
+            "receipt": {k: receipt.get(k) for k in ("id", "status")},
         })
 
     # -- exit path ----------------------------------------------------------
@@ -127,3 +173,39 @@ class AuditTrail:
     def postmortem(self, summary: dict) -> dict:
         """End-of-run record: realized/unrealized, per-risk framing."""
         return self.log.append({"event": "postmortem", **summary})
+
+    # -- R2 liquidation (PLAYBOOK §2: judged P&L = realized P&L) ---------
+
+    def r2_liquidate(self, positions: list, snapshot_fn, sleep=_time.sleep,
+                     max_walks: int = liquidate.MAX_WALKS_R2) -> dict:
+        """Hash-chained R2 record (2026-08-29 correctness fix: liquidate_all
+        was audit-silent — the week's terminal judged event, the 10:55 ET
+        flatten that pins judged P&L = realized P&L, would have left ZERO
+        chain evidence). The engine's fail-closed BrokerError is logged then
+        re-raised so a broken liquidation is on the record too."""
+        t0 = _time.time()
+        try:
+            report = liquidate.liquidate_all(
+                self.broker, positions, snapshot_fn,
+                sleep=sleep, max_walks=max_walks)
+        except Exception as e:
+            self.log.append({
+                "event": "r2_liquidation", "ok": False,
+                "error": f"{type(e).__name__}: {e}",
+                "elapsed_s": round(_time.time() - t0, 1)})
+            raise
+        return self.log.append({
+            "event": "r2_liquidation", "ok": True,
+            "cancelled": report["cancelled"],
+            "closed": report["closed"],
+            "failed": report["failed"],
+            "elapsed_s": round(_time.time() - t0, 1)})
+
+    def r2_verify(self, positions_after: list) -> dict:
+        """10:55–11:00 ET verification: every option position row must be
+        gone. The residual list IS the record — a non-empty residual logs
+        ok=False but does not raise (the R2 engine already raised); the
+        digest shows it red."""
+        ok, residual = liquidate.verify_flat(positions_after)
+        return self.log.append({
+            "event": "r2_verify_flat", "ok": ok, "residual": residual})
