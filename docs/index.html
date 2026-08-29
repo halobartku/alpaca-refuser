@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Refuser — live gate stack</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#121722; --line:#1f2735; --ink:#dbe4f0;
+    --dim:#7d8a9f; --ok:#3ddc84; --bad:#ff5c69; --acc:#ffd166;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px;display:block}
+  h1{font-size:26px;margin:0 0 4px}
+  h1 .rj{color:var(--bad)}
+  .sub{color:var(--dim);margin:0 0 26px;max-width:760px}
+  .sub a{color:var(--acc);text-decoration:none}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .panel h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--dim);margin:0 0 12px}
+  label{display:flex;justify-content:space-between;gap:8px;align-items:baseline;
+    font-size:13px;color:var(--dim);margin:7px 0 2px}
+  label b{color:var(--ink);font-weight:500}
+  input[type=number],input[type=datetime-local],select{
+    width:100%;background:#0a0d13;border:1px solid var(--line);color:var(--ink);
+    border-radius:6px;padding:6px 8px;font:13px var(--mono)}
+  input:focus,select:focus{outline:1px solid var(--acc)}
+  .row{display:flex;gap:10px}
+  .row>div{flex:1}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .presets button{background:#0a0d13;border:1px solid var(--line);color:var(--dim);
+    border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer}
+  .presets button:hover{color:var(--ink);border-color:var(--acc)}
+  .verdict{font:700 22px var(--mono);letter-spacing:.04em;padding:10px 16px;
+    border-radius:8px;margin-bottom:12px;text-align:center}
+  .verdict.ok{background:rgba(61,220,132,.12);color:var(--ok);
+    border:1px solid rgba(61,220,132,.4)}
+  .verdict.bad{background:rgba(255,92,105,.12);color:var(--bad);
+    border:1px solid rgba(255,92,105,.4)}
+  .gates{display:flex;flex-direction:column;gap:6px}
+  .gate{display:grid;grid-template-columns:14px 110px 1fr;gap:10px;align-items:baseline;
+    padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#0d1119}
+  .gate .dot{width:9px;height:9px;border-radius:50%;align-self:center}
+  .gate.pass .dot{background:var(--ok)} .gate.fail .dot{background:var(--bad)}
+  .gate .gname{font:12px var(--mono);color:var(--dim)}
+  .gate .gdet{font:12.5px var(--mono);word-break:break-word}
+  .gate.fail{border-color:rgba(255,92,105,.35)}
+  .contracts{margin:12px 2px 0;font:13px var(--mono);color:var(--dim)}
+  .contracts b{color:var(--ink)}
+  textarea{width:100%;min-height:150px;background:#0a0d13;border:1px solid var(--line);
+    color:var(--ink);border-radius:6px;padding:8px;font:12px var(--mono);resize:vertical}
+  .btns{display:flex;gap:8px;margin:10px 0 18px;flex-wrap:wrap}
+  .btns button{background:#0a0d13;border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
+  .btns button:hover{border-color:var(--acc)}
+  #chainout{font:13px var(--mono);padding:10px;border-radius:8px;display:none}
+  #chainout.ok{display:block;background:rgba(61,220,132,.1);color:var(--ok)}
+  #chainout.bad{display:block;background:rgba(255,92,105,.1);color:var(--bad)}
+  .sect{margin-top:34px}
+  .sect p{color:var(--dim);font-size:14px;max-width:760px}
+  .foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--dim);font-size:12.5px;max-width:820px}
+  .foot b{color:var(--ink)}
+  code{font:12.5px var(--mono);background:#0a0d13;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<wrap>
+  <h1>The <span class="rj">Refuser</span> — live gate stack</h1>
+  <p class="sub">Defined-risk options income where the differentiator is what it
+  <em>refuses</em>. This page runs the actual production gate stack
+  (<code>refuser/gates.py</code>) ported 1:1 to JavaScript — every verdict below is
+  computed by the same rules, in your browser, nothing is canned. The port is held
+  byte-identical to the Python original by a 31-case parity battery
+  (<code>tools/parity_test.py</code>). <a href="https://github.com/halobartku/alpaca-refuser">source ↗</a></p>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Intent · state · market</h2>
+      <div class="row">
+        <div><label><b>name</b></label>
+          <select id="f_name">
+            <option>SPY</option><option>QQQ</option><option>IWM</option>
+            <option>AAPL</option><option>MSFT</option><option>XOM</option>
+            <option>KO</option><option>PFE</option><option>GME</option>
+          </select></div>
+        <div><label><b>expiry</b></label>
+          <input type="date" id="f_expiry" value="2026-09-25"></div>
+      </div>
+      <div class="row">
+        <div><label>width <span id="v_width"></span></label>
+          <input type="number" id="f_width" value="5" step="0.5"></div>
+        <div><label>credit <span id="v_credit"></span></label>
+          <input type="number" id="f_credit" value="1.20" step="0.05"></div>
+      </div>
+      <div class="row">
+        <div><label>short Δ <span id="v_sd"></span></label>
+          <input type="number" id="f_short_delta" value="0.20" step="0.01"></div>
+        <div><label>spread Δ <span id="v_spd"></span></label>
+          <input type="number" id="f_spread_delta" value="0.10" step="0.01"></div>
+      </div>
+      <div class="row">
+        <div><label>long-leg spread $</label>
+          <input type="number" id="f_legsp" value="0.08" step="0.01"></div>
+        <div><label>long-leg OI</label>
+          <input type="number" id="f_oil" value="9000" step="500"></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--line);margin:14px 0">
+      <div class="row">
+        <div><label>equity $</label>
+          <input type="number" id="f_equity" value="100000" step="10000"></div>
+        <div><label>net Δ held</label>
+          <input type="number" id="f_netdelta" value="0" step="2"></div>
+      </div>
+      <div class="row">
+        <div><label>risk at open $</label>
+          <input type="number" id="f_risk" value="0" step="500"></div>
+        <div><label>open slots used</label>
+          <input type="number" id="f_slots" value="0" min="0" max="6"></div>
+      </div>
+      <label>held names (comma-sep)</label>
+      <input type="text" id="f_held" value="" placeholder="QQQ, IWM"
+        style="width:100%;background:#0a0d13;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font:13px var(--mono)">
+      <label style="margin-top:10px"><b>now (ET, naive)</b> — entry window Mon/Wed 10:05–15:00</label>
+      <input type="datetime-local" id="f_now" value="2026-08-31T11:30">
+      <label style="margin-top:10px"><input type="checkbox" id="f_dailystop" style="width:auto"> daily stop hit (−1.5%)</label>
+      <hr style="border:none;border-top:1px solid var(--line);margin:14px 0">
+      <div class="row">
+        <div><label>underlying $</label>
+          <input type="number" id="f_last" value="405" step="1"></div>
+        <div><label>ATM IV</label>
+          <input type="number" id="f_iv" value="0.22" step="0.01"></div>
+      </div>
+      <div class="row">
+        <div><label>SPY IV</label>
+          <input type="number" id="f_spyiv" value="0.16" step="0.01"></div>
+        <div><label>SPY IV 5d avg</label>
+          <input type="number" id="f_spy5" value="0.15" step="0.01"></div>
+      </div>
+      <div class="presets">
+        <button data-p="clean">clean accept</button>
+        <button data-p="deep">Δ 0.45 (too deep)</button>
+        <button data-p="thin">thin credit</button>
+        <button data-p="nfp">NFP blackout</button>
+        <button data-p="tuesday">Tuesday</button>
+        <button data-p="group">group cap</button>
+        <button data-p="delta">net-Δ over cap</button>
+        <button data-p="gme">GME</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Decision — every gate runs, every failure shows</h2>
+      <div class="verdict" id="verdict">…</div>
+      <div class="gates" id="gates"></div>
+      <div class="contracts" id="contracts"></div>
+    </div>
+  </div>
+
+  <div class="sect panel">
+    <h2>Hash-chain verifier — the audit trail, checkable by anyone</h2>
+    <p>Every decision the live agent makes is appended to a hash-chained log;
+    each record carries the sha256 of the previous one. Paste any log below
+    (or the pre-built sample) and verify it in your browser — the same check
+    as <code>python3 verify.py</code> in the repo.</p>
+    <div class="btns">
+      <button id="b_verify">verify chain</button>
+      <button id="b_load">load sample chain</button>
+      <button id="b_tamper">tamper with one character</button>
+    </div>
+    <textarea id="chainbox" spellcheck="false"></textarea>
+    <div id="chainout"></div>
+  </div>
+
+  <div class="foot">
+    <p><b>Why refusal is the P&amp;L engine:</b> at 0.5× take-profit and 3.0×
+    stop-loss the breakeven win rate is exactly 6/7 ≈ 85.7% — the entry has
+    near-zero naive edge; the stack of things this agent refuses to do is the
+    trade. Sizing: 0.75% of equity per ticket, ≤6 slots, ≤9% portfolio heat,
+    net-delta cap ±30 shares-equivalent at $100k (scales with equity).</p>
+    <p style="margin-top:10px"><b>AI disclosure:</b> this agent and this page
+    were built autonomously by an AI operator (Hermes, for Bartosz) as an entry
+    to the Alpaca Options Alpha Agents hackathon, Sept 2026. The gate logic
+    shown here is deterministic arithmetic, not an LLM at the wheel.</p>
+  </div>
+</wrap>
+
+<script src="demo.js"></script>
+<script>
+(function(){
+  var R = window.REFUSER, $ = function(id){return document.getElementById(id)};
+  var F = ["f_name","f_expiry","f_width","f_credit","f_short_delta",
+    "f_spread_delta","f_legsp","f_oil","f_equity","f_netdelta","f_risk",
+    "f_slots","f_held","f_now","f_dailystop","f_last","f_iv","f_spyiv","f_spy5"];
+
+  function readIntentStateMarket(){
+    var held = $("f_held").value.split(",").map(function(s){return s.trim()})
+      .filter(Boolean);
+    var now = $("f_now").value.replace(" ", "T") || "2026-08-31T11:30:00";
+    if (now.length === 16) now += ":00";
+    var credit = parseFloat($("f_credit").value)||0;
+    var askS = credit + 0.10, bidS = credit;          // short leg: 0.10 spread
+    var spL = parseFloat($("f_legsp").value)||0;
+    var askL = 0.55, bidL = +(askL - spL).toFixed(2); // long leg around 0.50
+    var intent = {
+      name: $("f_name").value, expiry: $("f_expiry").value,
+      width: parseFloat($("f_width").value)||0, credit: credit,
+      ask_short: askS, bid_short: bidS, ask_long: askL, bid_long: bidL,
+      oi_short: 12000, oi_long: parseInt($("f_oil").value)||0,
+      short_delta: parseFloat($("f_short_delta").value)||0,
+      spread_delta: parseFloat($("f_spread_delta").value)||0
+    };
+    var state = {
+      equity: parseFloat($("f_equity").value)||0,
+      open_positions: parseInt($("f_slots").value)||0,
+      positions_by_name: held,
+      risk_at_open: parseFloat($("f_risk").value)||0,
+      daily_stop_hit: $("f_dailystop").checked,
+      net_delta: parseFloat($("f_netdelta").value)||0,
+      now: now, today: now.split("T")[0]
+    };
+    var market = {
+      underlying_last: parseFloat($("f_last").value)||0,
+      atm_iv: parseFloat($("f_iv").value)||0,
+      spy_atm_iv: parseFloat($("f_spyiv").value)||0,
+      spy_iv_5d_avg: parseFloat($("f_spy5").value)||0
+    };
+    return {intent:intent, state:state, market:market};
+  }
+
+  function render(){
+    var x = readIntentStateMarket();
+    var res = R.evaluateIntent(x.intent, x.state, x.market);
+    var v = $("verdict");
+    v.className = "verdict " + (res.decision === "ACCEPT" ? "ok" : "bad");
+    v.textContent = res.decision + " — " + res.gates.filter(function(g){return !g.pass}).length
+      + " gate(s) refusing / " + res.gates.length + " run";
+    var box = $("gates"); box.innerHTML = "";
+    res.gates.forEach(function(g){
+      var d = document.createElement("div");
+      d.className = "gate " + (g.pass ? "pass" : "fail");
+      d.innerHTML = '<div class="dot"></div><div class="gname">' + g.gate
+        + '</div><div class="gdet">' + g.detail.replace(/</g,"&lt;") + "</div>";
+      box.appendChild(d);
+    });
+    $("contracts").innerHTML = "sizing: <b>" + res.contracts + "</b> contract(s)"
+      + " — floor(0.75% × equity / per-contract risk); zero is a refusal, never rounded up";
+    ["width","credit","short_delta","spread_delta"].forEach(function(k){
+      var lab = $("v_"+k); if (lab) lab.textContent = "";
+    });
+  }
+
+  var CLEAN = {f_name:"SPY", f_expiry:"2026-09-25", f_width:"5", f_credit:"1.20",
+    f_short_delta:"0.20", f_spread_delta:"0.10", f_legsp:"0.08", f_oil:"9000",
+    f_equity:"100000", f_netdelta:"0", f_risk:"0", f_slots:"0", f_held:"",
+    f_now:"2026-08-31T11:30", f_dailystop:false,
+    f_last:"405", f_iv:"0.22", f_spyiv:"0.16", f_spy5:"0.15"};
+  var PRESETS = {
+    clean: {},
+    deep:  {f_short_delta:0.45},
+    thin:  {f_credit:0.80},
+    nfp:   {f_now:"2026-09-04T09:30"},
+    tuesday:{f_now:"2026-09-01T11:30"},
+    group: {f_held:"QQQ, IWM"},
+    delta: {f_netdelta:22},
+    gme:   {f_name:"GME"}
+  };
+  Array.prototype.forEach.call(document.querySelectorAll(".presets button"),
+    function(b){
+      b.addEventListener("click", function(){
+        var p = Object.assign({}, CLEAN, PRESETS[b.dataset.p]);
+        Object.keys(p).forEach(function(k){
+          var el = $(k); if (!el) return;
+          if (el.type === "checkbox") el.checked = p[k]; else el.value = p[k];
+        });
+        render();
+      });
+    });
+  F.forEach(function(id){ $(id).addEventListener("input", render); });
+
+  // --- chain verifier ------------------------------------------------------
+  var sampleBodies = [
+    {event:"intent_evaluated", name:"SPY", decision:"REFUSE",
+     blocked_by:["liquidity"], equity:100000},
+    {event:"intent_evaluated", name:"QQQ", decision:"ACCEPT", contracts:1,
+     credit:1.2, blocked_by:[]},
+    {event:"order_filled", name:"QQQ", qty:1, credit:1.18,
+     exit_gtc:"BUY 1 QQQ 0925 385/380P @ 0.59 GTC"}
+  ];
+  function buildSampleText(){
+    var recs = [], head = "GENESIS";
+    var chain = sampleBodies.reduce(function(seq, b){
+      return seq.then(function(rs){
+        return R.appendDecision(rs, b).then(function(rec){
+          rs.push(rec); return rs;
+        });
+      });
+    }, Promise.resolve([]));
+    return chain.then(function(rs){
+      return rs.map(function(r){return JSON.stringify(r)}).join("\n") + "\n";
+    });
+  }
+  $("b_load").addEventListener("click", function(){
+    buildSampleText().then(function(t){ $("chainbox").value = t; verify(); });
+  });
+  $("b_tamper").addEventListener("click", function(){
+    var t = $("chainbox").value;
+    if (!t.trim()) { buildSampleText().then(function(x){ $("chainbox").value = x; tamper(); }); }
+    else tamper();
+    function tamper(){
+      var t2 = $("chainbox").value.replace('"qty":1', '"qty":2');
+      if (t2 === $("chainbox").value)
+        t2 = $("chainbox").value.replace("1.18", "1.81");
+      $("chainbox").value = t2; verify();
+    }
+  });
+  $("b_verify").addEventListener("click", verify);
+  function verify(){
+    var out = $("chainout");
+    R.verifyChain($("chainbox").value).then(function(v){
+      out.className = v.ok ? "ok" : "bad";
+      out.textContent = v.ok
+        ? "CHAIN OK — " + v.records + " records, head " + v.head + "…"
+        : "CHAIN BROKEN — " + v.error;
+    });
+  }
+
+  render();
+  buildSampleText().then(function(t){ $("chainbox").value = t; });
+})();
+</script>
+</body>
+</html>

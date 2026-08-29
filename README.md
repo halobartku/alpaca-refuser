@@ -21,6 +21,26 @@ guess. Built for the Alpaca "Options Alpha Agents" hackathon, Sept 2026.
    snapshot, every gate evaluation, order ticket, fill, post-mortem — so
    any judge can replay the week with one command.
 
+## Hosted demo
+
+**https://halobartku.github.io/alpaca-refuser/** — the live gate stack as an
+interactive page: edit an intent, watch all nine gates rule on it in your
+browser, and verify (or tamper with) a hash-chained decision log client-side.
+
+The page runs a 1:1 JavaScript port of `refuser/gates.py`
+(`docs/demo.js`). The port is not trusted because it runs — it is held
+**byte-identical to the Python stack** by a parity battery: 31 adversarial
+cases where decision, contract count, and every gate detail string must match
+the Python output exactly, plus cross-verification of the hash chain in both
+directions (JS-built chain accepted by an independent Python verifier;
+Python-built chain accepted by the JS verifier; a one-character body edit
+must break both).
+
+```
+python3 tools/parity_test.py     # PARITY OK or exit 1
+node tools/demo-smoke.js         # 13/13 headless-browser checks, 0 console errors
+```
+
 ## One-command test suite
 
 ```
