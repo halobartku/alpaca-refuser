@@ -1,0 +1,120 @@
+{
+ "2026-01-09": {
+  "anchor": 690.92,
+  "anchor_src": "pre-print bar 13:27Z",
+  "close_1055": 691.5,
+  "move_pct": 0.084,
+  "max_pct": 0.352,
+  "thu_close": 689.44,
+  "thu_pct": 0.299
+ },
+ "2026-03-06": {
+  "error": "no anchor",
+  "thu_close": 681.405,
+  "thu_pct": 1.565,
+  "anchor": 681.405,
+  "anchor_src": "Thu close (no pre-mkt bars)",
+  "close_1055": 670.74,
+  "move_pct": 1.565,
+  "max_pct": 1.6
+ },
+ "2026-05-08": {
+  "anchor": 735.2,
+  "anchor_src": "pre-print bar 12:25Z",
+  "close_1055": 737.26,
+  "move_pct": 0.28,
+  "max_pct": 0.311,
+  "thu_close": 731.53,
+  "thu_pct": 0.783
+ },
+ "2026-06-05": {
+  "anchor": 753.68,
+  "anchor_src": "pre-print bar 12:17Z",
+  "close_1055": 749.61,
+  "move_pct": 0.54,
+  "max_pct": 0.678,
+  "thu_close": 756.97,
+  "thu_pct": 0.972
+ },
+ "2026-08-07": {
+  "anchor": 770.36,
+  "anchor_src": "pre-print bar 12:29Z",
+  "close_1055": 772.125,
+  "move_pct": 0.229,
+  "max_pct": 0.371,
+  "thu_close": 768.64,
+  "thu_pct": 0.453
+ },
+ "2025-01-10": {
+  "anchor": 589.34,
+  "anchor_src": "Thu close",
+  "close_1055": 581.685,
+  "thu_close": 589.34,
+  "move_pct": 1.299,
+  "max_pct": 1.717,
+  "thu_pct": 1.299
+ },
+ "2025-02-07": {
+  "anchor": 606.24,
+  "anchor_src": "Thu close",
+  "close_1055": 601.77,
+  "thu_close": 606.24,
+  "move_pct": 0.737,
+  "max_pct": 0.737,
+  "thu_pct": 0.737
+ },
+ "2025-03-07": {
+  "anchor": 572.73,
+  "anchor_src": "Thu close",
+  "close_1055": 570.92,
+  "thu_close": 572.73,
+  "move_pct": 0.316,
+  "max_pct": 0.714,
+  "thu_pct": 0.316
+ },
+ "2025-04-04": {
+  "anchor": 523.18,
+  "anchor_src": "pre-print 12:15Z",
+  "close_1055": 514.3,
+  "thu_close": 537.3,
+  "move_pct": 1.697,
+  "max_pct": 2.471,
+  "thu_pct": 4.281
+ },
+ "2025-05-02": {
+  "anchor": 560.68,
+  "anchor_src": "pre-print 12:17Z",
+  "close_1055": 565.31,
+  "thu_close": 558.4,
+  "move_pct": 0.826,
+  "max_pct": 0.997,
+  "thu_pct": 1.237
+ },
+ "2025-06-06": {
+  "anchor": 595.63,
+  "anchor_src": "pre-print 12:12Z",
+  "close_1055": 599.67,
+  "thu_close": 593.08,
+  "move_pct": 0.678,
+  "max_pct": 0.857,
+  "thu_pct": 1.111
+ },
+ "2025-08-01": {
+  "anchor": 631.9,
+  "anchor_src": "Thu close",
+  "close_1055": 622.31,
+  "thu_close": 631.9,
+  "move_pct": 1.518,
+  "max_pct": 1.905,
+  "thu_pct": 1.518
+ },
+ "2025-09-05": {
+  "anchor": 649.72,
+  "anchor_src": "pre-print 12:27Z",
+  "close_1055": 645.83,
+  "thu_close": 649.02,
+  "move_pct": 0.599,
+  "max_pct": 0.85,
+  "thu_pct": 0.492
+ }
+}
