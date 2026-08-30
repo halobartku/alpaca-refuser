@@ -47,7 +47,8 @@ node tools/demo-smoke.js         # 13/13 headless-browser checks, 0 console erro
 python3 run_tests.py
 ```
 
-112 checks across the core engine, the full offline trading path, and the
+149 checks (82 + 17 + 26 + 24, printed per block by the runner) across the
+core engine, the full offline trading path, and the
 evidence harness (all through a fixture-driven broker adapter — zero
 network, zero credentials):
 
