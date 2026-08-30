@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Refuser - Alpaca Options Alpha Agents</title>
+<style>
+  :root{
+    /* Palette reused from the hosted demo (docs/index.html) so deck and demo read as one artifact */
+    --ink:#dbe4f0; --mut:#7d8a9f; --line:#1f2735; --bg:#0b0e14;
+    --accent:#ffd166; --ok:#3ddc84; --bad:#ff5c69; --panel:#121722;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#05070b;color:var(--ink);
+    font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .slide{
+    width:1122px;height:793px;           /* A4 landscape @96dpi */
+    background:var(--bg);margin:22px auto;padding:58px 68px 52px;
+    position:relative;overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    display:flex;flex-direction:column;
+  }
+  h1{font-size:52px;line-height:1.08;margin:0 0 10px;letter-spacing:-.02em}
+  h2{font-size:34px;line-height:1.15;margin:0 0 22px;letter-spacing:-.01em}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-bottom:16px}
+  p{margin:0 0 13px;font-size:19px;max-width:62ch}
+  ul{margin:0 0 13px;padding-left:22px}
+  li{font-size:19px;margin-bottom:9px;max-width:64ch}
+  b,strong{font-weight:650}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .num{font-size:74px;font-weight:680;letter-spacing:-.03em;line-height:1}
+  .big{font-size:26px;line-height:1.35;max-width:56ch}
+  .mut{color:var(--mut)}
+  .accent{color:var(--accent)}
+  .rule{height:3px;width:64px;background:var(--accent);margin:0 0 26px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px 24px;margin:6px 0 14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .foot{position:absolute;left:68px;right:68px;bottom:24px;display:flex;justify-content:space-between;
+    font-size:12px;color:var(--mut);border-top:1px solid var(--line);padding-top:10px}
+  table{border-collapse:collapse;width:100%;font-size:16px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+  .live{background:rgba(255,209,102,.10);border:1px dashed var(--accent);color:var(--accent);
+    padding:1px 7px;border-radius:4px;font-size:14px;font-weight:600;white-space:nowrap}
+  .gates{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:4px 0 16px}
+  .gate{border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:16px}
+  .gate span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-bottom:3px}
+  @page{size:A4 landscape;margin:0}
+  @media print{
+    html,body{background:#fff}
+    .slide{margin:0;box-shadow:none;page-break-after:always;break-after:page;
+           width:100%;height:100vh}
+    .slide:last-child{page-break-after:auto;break-after:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide">
+  <div class="kicker">Alpaca Options Alpha Agents &middot; September 2026</div>
+  <h1>The Refuser</h1>
+  <div class="rule"></div>
+  <p class="big">An options agent that is judged on what it did <em>not</em> do.</p>
+  <div style="margin-top:auto">
+    <p class="mut mono" style="font-size:16px">
+      Account <span class="live">[LIVE PA3YVMJ3YVDZ]</span><br>
+      github.com/halobartku/alpaca-refuser &nbsp;(MIT)<br>
+      halobartku.github.io/alpaca-refuser &nbsp;(hosted demo)
+    </p>
+  </div>
+  <div class="foot"><span>The Refuser</span><span>1 / 12</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The concession, first</div>
+  <h2>This does not win a raw P&amp;L leaderboard</h2>
+  <div class="panel">
+    <div class="num accent">0.5%</div>
+    <p style="margin:8px 0 0">weekly ceiling of a defined-risk short-premium book at 4% portfolio heat.
+    At our 50%-of-credit exit, realistically <b>about 0.29%</b>.</p>
+  </div>
+  <p>That is arithmetic, not modesty. A judge can reproduce it in ten seconds, so it is
+  said here rather than discovered later.</p>
+  <p><b>What it competes on instead:</b> reasoning, risk management, and an audit trail
+  that no other entry can produce.</p>
+  <div class="foot"><span>The Refuser</span><span>2 / 12</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">What it trades</div>
+  <h2>Put credit spreads, unattended</h2>
+  <table>
+    <tr><th>Structure</th><td>Put credit spreads, $1-5 wide</td></tr>
+    <tr><th>Duration</th><td>21-35 days to expiry</td></tr>
+    <tr><th>Short leg</th><td>delta 0.15-0.25</td></tr>
+    <tr><th>Universe</th><td>fixed 8 liquid names</td></tr>
+    <tr><th>Size</th><td>0.75% of equity per ticket</td></tr>
+    <tr><th>Loop</th><td>reconcile &rarr; scan &rarr; gate &rarr; size &rarr; order &rarr; exit</td></tr>
+  </table>
+  <p style="margin-top:18px"><b>No LLM at the wheel.</b> Deterministic arithmetic decides.
+  The model may veto an entry; it may never generate one.</p>
+  <div class="foot"><span>The Refuser</span><span>3 / 12</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">The economic engine</div>
+  <h2>Variance risk premium, not pattern reading</h2>
+  <p>The motor is the <b>variance risk premium</b> (Carr and Wu, 2009): implied volatility
+  is systematically richer than what gets realised.</p>
+  <div class="panel">
+    <p style="margin:0"><b>Tested and dropped:</b> candlestick patterns. Marshall, Young and
+    Rose (2007) find no value across a majority of DJIA stocks; Park and Irwin find the
+    positive results concentrate in pre-2000 FX and futures.</p>
+  </div>
+  <p><b>The four signals that earn their place:</b> IV level and rank &middot; delta as a
+  probability proxy &middot; DTE and theta geometry &middot; the earnings calendar.</p>
+  <div class="foot"><span>The Refuser</span><span>4 / 12</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">Why refusal is the edge</div>
+  <h2>Breakeven win rate is 85.7%</h2>
+  <div class="grid2">
+    <div>
+      <div class="num">6/7</div>
+      <p style="margin-top:10px">Target 0.5&times; credit, stop 3.0&times; credit.
+      At that geometry the mechanical rules carry near-zero naive expected value.</p>
+    </div>
+    <div class="panel" style="margin:0">
+      <p style="margin:0;font-size:20px"><b>The gates do not decorate an edge.
+      They stop us destroying one we already have.</b></p>
+    </div>
+  </div>
+  <p style="margin-top:20px"><b>Fail-closed is absolute.</b> Unknown earnings date, missing
+  snapshot, account mismatch, broker error - each produces <b>no order at all</b>.
+  A wrong number is never better than no trade.</p>
+  <div class="foot"><span>The Refuser</span><span>5 / 12</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">The gate stack</div>
+  <h2>Eight gates. All pass, or no order exists.</h2>
+  <div class="gates">
+    <div class="gate"><span>1 Duration</span>21-35 DTE</div>
+    <div class="gate"><span>2 Delta</span>0.15-0.25 short leg</div>
+    <div class="gate"><span>3 Structure</span>width, credit, risk cap</div>
+    <div class="gate"><span>4 Liquidity</span>spread &le;35% of credit, OI &ge;1000</div>
+    <div class="gate"><span>5 Underlying</span>last &ge; $40</div>
+    <div class="gate"><span>6 Calendar</span>earnings, NFP, session window</div>
+    <div class="gate"><span>7 IV regime</span>ATM IV &ge;18%, SPY IV &gt; 5d avg</div>
+    <div class="gate"><span>8 Portfolio</span>slots, heat, beta-group, net delta</div>
+  </div>
+  <div class="panel">
+    <p style="margin:0">This week: <span class="live">[LIVE N]</span> evaluated,
+    <span class="live">[LIVE M]</span> taken, <span class="live">[LIVE K]</span> refused -
+    every refusal carrying a written reason.</p>
+  </div>
+  <div class="foot"><span>The Refuser</span><span>6 / 12</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">The portfolio gate</div>
+  <h2>SPY, QQQ and IWM are one bet, not three</h2>
+  <p><b>Caps:</b> 2 positions per correlated beta-group, plus a portfolio net-delta cap
+  expressed as a fraction of equity.</p>
+  <div class="panel">
+    <p style="margin:0"><b>The failure we defend against is not a blow-up.</b> It is
+    clustered stops on a single volatility event, followed by the refusal layer locking
+    out re-entry - leaving a negative account with no premium left to grind back inside
+    a one-week window.</p>
+  </div>
+  <p>A blow-up is loud and obvious. This one is quiet, and it is the one that actually
+  ends short-premium books.</p>
+  <div class="foot"><span>The Refuser</span><span>7 / 12</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="kicker">The trap we built against</div>
+  <h2>Judged and developed on accounts 10&times; apart</h2>
+  <p>The rules permit development on any account and require judging on a fresh $100,000
+  account. Every risk rule here is a <b>percentage of equity</b>.</p>
+  <div class="panel">
+    <p style="margin:0">A constant calibrated on the development account makes every judged
+    position <b>ten times too large</b>, and the first bad day is unrecoverable.</p>
+  </div>
+  <ul>
+    <li>Equity read from <span class="mono">/v2/account</span> <b>at decision time</b> - never cached, never defaulted</li>
+    <li><b>Account number asserted</b> before any order exists</li>
+    <li>A test proves the same signal produces contract counts <b>exactly 10&times; apart</b> at identical percentage risk</li>
+  </ul>
+  <div class="foot"><span>The Refuser</span><span>8 / 12</span></div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="kicker">Execution on stale data</div>
+  <h2>The constraint, turned into the differentiator</h2>
+  <p>Free-tier option quotes are <b>15 minutes stale</b>. No free real-time options feed
+  exists anywhere, because every vendor pays exchange fees.</p>
+  <ul>
+    <li>The underlying <b>is</b> live, and implied volatility moves slower than price</li>
+    <li>So every spread is repriced off the live underlying and the delayed surface,
+        using a Black-Scholes engine validated against Hull's canonical example and
+        put-call parity (max error 1.4e-14)</li>
+    <li>A quote diverging from our own mark beyond tolerance is a
+        <b>refusal before an order exists</b>, not a bad fill afterwards</li>
+  </ul>
+  <p>Measured slippage against our own marks: <span class="live">[LIVE X cents per leg]</span></p>
+  <div class="foot"><span>The Refuser</span><span>9 / 12</span></div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="kicker">Evidence</div>
+  <h2>You can check all of it yourself</h2>
+  <ul>
+    <li><b>Hash-chained append-only log</b>: per decision, the data snapshot, the signal,
+        every gate evaluation with its reason, the order ticket and the fill</li>
+    <li>The chain is <b>verifiable in the browser</b> on the hosted demo - not a claim, a check you run</li>
+    <li><b>Offline suite green</b>, including a parity battery proving the browser port is
+        byte-identical to the Python core</li>
+    <li>Public <b>MIT</b> repository: no credentials, no account ids anywhere in the tree</li>
+  </ul>
+  <div class="panel">
+    <p style="margin:0">The log is append-only and chained precisely so that the record
+    cannot be improved after the week goes badly.</p>
+  </div>
+  <div class="foot"><span>The Refuser</span><span>10 / 12</span></div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="kicker">The week</div>
+  <h2>What actually happened</h2>
+  <div class="panel">
+    <p style="margin:0 0 8px"><span class="live">[LIVE equity curve, start to finish]</span></p>
+    <p style="margin:0"><span class="live">[LIVE trades taken / refusals / win rate / P&amp;L per unit of risk]</span></p>
+  </div>
+  <p><b>Liquidated 10:55 ET Friday.</b> Submissions close mid-session at 11:00 ET and the
+  last 3.5 hours of Friday are unjudged, so removing that variance cost nothing and makes
+  judged P&amp;L equal realised P&amp;L.</p>
+  <p class="mut">Every number on this slide is read off the judged account at build time.
+  Anything that could not be produced was deleted rather than approximated.</p>
+  <div class="foot"><span>The Refuser</span><span>11 / 12</span></div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <div class="kicker">Close</div>
+  <h2>Many accounts will be up 15% on one lucky bet</h2>
+  <p class="big">Approximately none of them will be able to account for themselves.</p>
+  <ul style="margin-top:18px">
+    <li>Every position sized from live equity</li>
+    <li>Every refusal written down with a reason</li>
+    <li>Every decision hash-chained, so the record cannot be edited after the fact</li>
+  </ul>
+  <div class="panel" style="margin-top:14px">
+    <p style="margin:0"><b>AI use is disclosed throughout</b>, in the repository, the
+    write-up and the video.</p>
+  </div>
+  <div class="foot"><span>The Refuser &middot; halobartku.github.io/alpaca-refuser</span><span>12 / 12</span></div>
+</section>
+
+</body>
+</html>
