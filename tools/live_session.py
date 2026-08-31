@@ -23,7 +23,7 @@ from datetime import date, datetime, timezone, timedelta
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 
-from refuser import bs, portfolio as pf, universe as uni          # noqa
+from refuser import bs, exits, portfolio as pf, universe as uni   # noqa
 from refuser.audit import AuditTrail                              # noqa
 from refuser.live import AlpacaBroker                             # noqa
 from refuser.log import DecisionLog                               # noqa
@@ -375,6 +375,33 @@ def main():
         rb = r.get("body", r)
         print("  %s: %s %s %s" % (n, rb.get("decision"), rb.get("reason", ""),
                                   rb.get("receipt", "")))
+        if rb.get("decision") != "SUBMIT":
+            continue
+
+        # exits.py rule 1: a position is never alive without its resting exit.
+        # submit_entry places the spread and stops there, so a session that
+        # ends here leaves the position naked. That is worse than not trading.
+        order_id = (rb.get("receipt") or {}).get("order_id")
+        posplan = exits.open_position_plan(body, body["contracts"])
+        trail.fill(posplan, order_id)
+        try:
+            g = trail.place_gtc_exit(posplan, sym_s, sym_l)
+            gb = g.get("body", g)
+            print("      GTC exit resting at %.2f (%s)"
+                  % (gb.get("limit", 0.0), (gb.get("receipt") or {}).get("status")))
+        except Exception as e:
+            # Fail-closed: the broker refused the protective order, so the
+            # position must not be left open on the strength of a hope.
+            print("      CRITICAL: GTC exit REJECTED (%s). Cancelling the "
+                  "entry rather than holding it unprotected." % type(e).__name__)
+            try:
+                if order_id:
+                    broker.cancel_order(order_id)
+                    print("      entry order %s cancelled" % order_id)
+            except Exception as e2:
+                print("      CRITICAL: cancel also failed (%s). POSITION MAY BE "
+                      "OPEN AND UNPROTECTED - human must check the account NOW."
+                      % type(e2).__name__)
     return 0
 
 
