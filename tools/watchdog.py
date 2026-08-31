@@ -60,8 +60,8 @@ def main():
     print(f"positions: {len(pos)} | open orders: {len(opn)}")
 
     # broker-side history: catches orders even if the session log is lost
-    code3, acts = api("/v2/account/activities?activity_types=FILL,"
-                      "TRANS,ACATC,CSD,M&R&days=7", hdrs)
+    code3, acts = api("/v2/account/activities?activity_types=FILL,TRANS"
+                      "&days=7", hdrs)
     if code3 == 200 and isinstance(acts, list):
         fills = [a for a in acts if a.get("activity_type") == "FILL"]
         print(f"order fills in last 7d: {len(fills)} "
