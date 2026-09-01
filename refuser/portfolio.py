@@ -24,7 +24,7 @@ from refuser import universe as U
 # equity so it is a coherent fraction of the book, anchored so that $100k
 # yields exactly the historical +/-30 shares (cap = equity * 3 / 10000:
 # 30 at $100k, 300 at $1M). This is a NO-OP for the judged $100k account
-# (PA3YVMJ3YVDZ) and unblocks the $1M tester's full-size path, which was
+# (the judged $100k account) and unblocks the $1M tester's full-size path, which was
 # previously untestable under the absolute cap. Mirrored in gates.py as
 # MAX_NET_DELTA_ABS (the $100k anchor); defined here to avoid a circular
 # import.

@@ -5,7 +5,7 @@ Every `[LIVE]` marker is a number that must be read off the judged account at
 recording time and never typed from memory. If a `[LIVE]` number cannot be
 produced, cut the sentence rather than approximating it.
 
-**Recording is blocked until Alpaca keys for PA3YVMJ3YVDZ work** (they currently
+**Recording is blocked until Alpaca keys for the judged account work** (they currently
 return HTTP 401). Everything else in this script can be rehearsed and the slides
 built now.
 

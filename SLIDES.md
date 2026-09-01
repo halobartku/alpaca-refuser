@@ -12,7 +12,7 @@ the deck and the demo look like one artefact. Do not introduce a template.
 ## 1. Title
 **The Refuser**
 An options agent that is judged on what it did not do
-Account `[LIVE PA3YVMJ3YVDZ]` · Alpaca Options Alpha Agents · September 2026
+Account `[LIVE ACCOUNT — read from the judged account at build]` · Alpaca Options Alpha Agents · September 2026
 Repo (MIT): github.com/halobartku/alpaca-refuser · Demo: halobartku.github.io/alpaca-refuser
 
 ## 2. The concession, first

@@ -12,7 +12,7 @@ python3 - "$OUT/slides-final.html" <<'PY'
 import sys
 html = open("slides.html").read()
 subs = [
-    ("[LIVE PA3YVMJ3YVDZ]",
+    ("[LIVE ACCOUNT]",
      "Judged account FX-JUDGE-100K (week opens 2026-09-01; live number filled at build)"),
     ("This week: <span class=\"live\">[LIVE N]</span> evaluated,\n    "
      "<span class=\"live\">[LIVE M]</span> taken, <span class=\"live\">[LIVE K]</span> refused",

@@ -54,7 +54,8 @@ network, zero credentials):
 
 - Black-Scholes repricer validated against Hull's canonical example and
   put-call parity across a 144-point grid (max error 1.4e-14).
-- 8-entry gate stack, fail-closed: all gates run, all failures reported.
+- 9-entry gate stack (8 entry gates + portfolio net-delta cap inside the sizing
+  loop), fail-closed: all gates run, all failures reported.
 - Exit engine: 6 rules in priority order, first-hit-fires.
 - Hash-chained decision log: single-byte tamper flips raise on reload.
 - Audit producers (`refuser/audit.py`): the only layer allowed to write
