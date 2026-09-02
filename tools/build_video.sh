@@ -8,12 +8,32 @@ CHROM="chromium --headless=new --no-sandbox --disable-gpu --hide-scrollbars"
 VOICE="en-US-AndrewMultilingualNeural"
 
 # ---- 1. honest slide variant ----
-python3 - "$OUT/slides-final.html" <<'PY'
+# 2026-09-02: keys verified live (PA3YVMJ3YVDZ ACTIVE). Read the REAL account
+# number from the API at build time — never from memory, never committed
+# (build/ is gitignored; slide 12's "no account ids in the tree" stays true).
+LIVE_ACCT=$(python3 - <<'PY'
+import json, urllib.request
+env = {}
+for line in open("/workspace/forge/keys/alpaca.env"):
+    line = line.strip()
+    if line and not line.startswith("#") and "=" in line:
+        k, v = line.split("=", 1); env[k.strip()] = v.strip().strip('"').strip("'")
+req = urllib.request.Request("https://paper-api.alpaca.markets/v2/account",
+    headers={"APCA-API-KEY-ID": env["APCA_API_KEY_ID"],
+             "APCA-API-SECRET-KEY": env["APCA_API_SECRET_KEY"]})
+d = json.load(urllib.request.urlopen(req, timeout=20))
+assert d.get("status") == "ACTIVE", f"account not ACTIVE: {d.get('status')}"
+print(d["account_number"])
+PY
+) || { echo "FATAL: could not read live account number — aborting, keeping old build"; exit 1; }
+echo "live account: $LIVE_ACCT"
+python3 - "$OUT/slides-final.html" "$LIVE_ACCT" <<'PY'
 import sys
 html = open("slides.html").read()
+acct = sys.argv[2]
 subs = [
     ("[LIVE ACCOUNT]",
-     "Judged account FX-JUDGE-100K (week opens 2026-09-01; live number filled at build)"),
+     f"Judged account {acct} (verified live at build, 2026-09-02)"),
     ("This week: <span class=\"live\">[LIVE N]</span> evaluated,\n    "
      "<span class=\"live\">[LIVE M]</span> taken, <span class=\"live\">[LIVE K]</span> refused",
      "Demo cycle (shipped gate path, fixture market): 4 evaluated, 1 taken, 3 refused"),
