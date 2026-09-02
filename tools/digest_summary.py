@@ -49,6 +49,7 @@ def summarize(path: str) -> str:
     gate_pass = collections.Counter()
     gate_fail = collections.Counter()
     near_miss = []          # blocked by exactly one market gate
+    seen_near_miss = set()  # (name, gate, detail) — dedup re-evaluations
     credits = []            # (credit, passed_width_credit, name, seq)
 
     for r in entries:
@@ -63,7 +64,14 @@ def summarize(path: str) -> str:
                     credits.append((float(m.group(1)), g["pass"],
                                     r.get("name"), r.get("seq")))
         if len(fails) == 1:
-            near_miss.append((r, fails[0]))
+            # Dedup identical re-evaluations of the same candidate (same name,
+            # same gate, same detail): multi-day live journals re-scan the same
+            # 8-name universe each session and the judge-facing front page must
+            # list each distinct near-miss once, not once per session.
+            key = (r.get("name"), fails[0]["gate"], fails[0]["detail"])
+            if key not in seen_near_miss:
+                seen_near_miss.add(key)
+                near_miss.append((r, fails[0]))
 
     L = []
     L.append("# Gate funnel — aggregate")
