@@ -127,7 +127,10 @@ class AlpacaBroker(BaseBroker):
         quote = (q or {}).get("quote") or {}
         last = quote.get("bp") and quote.get("ap") and (
             (quote["bp"] + quote["ap"]) / 2.0)
-        if last is None:
+        # A falsy `and` chain yields 0.0/None, and IEX returns zeros outside
+        # RTH — `last is None` alone let spot=0 through silently (empty chain,
+        # masked as "IV history incomplete"). Non-positive mid is no quote.
+        if not last or last <= 0:
             raise BrokerError(f"no IEX quote for {symbol} — refuse")
         return {"last": last, "bid": quote.get("bp"), "ask": quote.get("ap")}
 
