@@ -17,7 +17,8 @@ Modes:
 
 Interlocks before any order (ALL must hold, else fail-closed REFUSE):
   1. tools/NFP_ARMED exists (operator opt-in, created explicitly).
-  2. broker.get_account() == PA3YVMJ3YVDZ, ACTIVE, not blocked, equity>0.
+  2. broker.get_account().account_number matches PA3Y…YVDZ (partial id —
+     the git tree carries no full account id, commit 6ffd642).
   3. straddle_gate() verdict == ACCEPT.
   4. contracts >= 1 at the 2% cap (else the trade is too small to exist).
   5. Wall-clock inside Thursday 19:30-19:59 UTC (never fire late/early).
@@ -37,7 +38,8 @@ from refuser.nfp_gate import straddle_gate
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JOURNAL = os.path.join(ROOT, "live-decisions.jsonl")
 ARM_FILE = os.path.join(ROOT, "tools", "NFP_ARMED")
-EXPECTED_ACCOUNT = "PA3YVMJ3YVDZ"
+EXPECTED_ACCOUNT_PREFIX = "PA3Y"   # partial id only — no full account id in the git tree
+EXPECTED_ACCOUNT_SUFFIX = "YVDZ"
 EXPIRY = "2026-09-04"          # the 1-DTE Friday the NFP print lands on
 WEEKDAY = 3                     # Thursday
 WINDOW = (19 * 60 + 30, 19 * 60 + 59)   # UTC minutes — order window
@@ -129,7 +131,9 @@ def main(argv):
     # -- live inputs -----------------------------------------------------
     try:
         acct = broker.get_account()
-        assert acct["account_number"] == EXPECTED_ACCOUNT, acct["account_number"]
+        num = acct["account_number"]
+        assert num.startswith(EXPECTED_ACCOUNT_PREFIX) and \
+            num.endswith(EXPECTED_ACCOUNT_SUFFIX), f"unexpected account {num[:4]}…{num[-4:]}"
         spot = broker.get_underlying_quote("SPY")["last"]
         band = 1.0
         puts = _contracts_chain(broker, "put", spot - band, spot + band)
