@@ -79,15 +79,19 @@ post-mortem. Tamper-evident; `verify.py` replay for judges.
 - Max drawdown vs 1.5% daily stop: `n/a — no positions, equity never moved, drawdown 0 by absence`
 
 **Event trade — NFP straddle (§4):** the one thing the income gates must not
-block is a genuinely cheap event. Thursday close 09-03: 1-DTE ATM straddle
-$5.63 = 0.734% of spot vs the 0.875% gate (= 0.9 × median Thu-close→10:55 ET
-move of 0.972%, n=13 NFP mornings) → **ACCEPT, 3 contracts, limit day order
-at $6.71** — the only size that ever clears risk (2% equity cap). Logged as
-seq 204 in the same chain before placement; `tools/nfp_decide.py` is the
-executable verdict, armed for the 19:50Z window, fail-closed like everything
-else. If the indicative mid was wrong and the real market is pricier, the
-day limit simply doesn't fill — the refusal logic protects even the trade
-it took.
+block is a genuinely cheap event. Thursday close 09-03, executed live at
+19:50Z: 1-DTE ATM straddle (SPY 773 puts + calls, 09-04 expiry) mid **$3.90
+= 0.504% of spot 773.44** vs the 0.875% gate (= 0.9 × median Thu-close→10:55 ET
+move of 0.972%, n=13 NFP mornings) → **ACCEPT, 5 contracts at the 2% equity
+cap ($1,965 debit = 1.97% of equity), limit day order at $3.95, filled
+at $3.93** (limit ≤ min(mid+0.05, cutoff $6.77)).
+Logged as seq 205 in the same chain before placement; `tools/nfp_decide.py`
+is the executable verdict, armed for the 19:30-19:59Z window, fail-closed
+like everything else. If the indicative mid was wrong and the real market is
+pricier, the day limit simply doesn't fill — the refusal logic protects even
+the trade it took. (The morning read showed $5.63/0.734%; by the close the
+straddle had cheapened to $3.90 — the gate was evaluated on the close number,
+not the morning one.)
 
 ## 5. Known limitations (stated, not hidden)
 
