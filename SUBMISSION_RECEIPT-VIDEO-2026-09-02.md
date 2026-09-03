@@ -1,17 +1,20 @@
 # SUBMISSION_RECEIPT — video (MP4) + slides (PDF), rebuilt 2026-09-02
 
-Rebuild trigger: Alpaca keys verified ACTIVE (PA3YVMJ3YVDZ, $100k, L3) — the
+Rebuild trigger: Alpaca keys verified ACTIVE (PA3Y…YVDZ, $100k, L3) — the
 "keys 401" limitation of the 2026-08-30 build no longer applied, so the
 fictional `FX-JUDGE-100K` substitution was replaced with the real judged
 account number, read from the live API at build time.
 
 Deliverables: `build/slides-final.mp4` + `build/slides-final.pdf` (build/ is
-gitignored; account id never enters the git tree — slide 12 claim intact).
+gitignored; the full account id never enters the git tree — tracked files carry
+only the partial `PA3Y…YVDZ`, slide 12 claim intact. Found via cowork review
+2026-09-03; previously this receipt itself quoted the full id, contradicting
+its own claim).
 
 | Check | Result | Evidence |
 |---|---|---|
-| Keys live (independent, A.152) | PASS | GET /v2/account → PA3YVMJ3YVDZ ACTIVE, equity 100000, 0 positions/orders/fills (pre-14:10Z Wednesday session — expected) |
-| Real account on slide 1 | PASS | slides-final.html line 66 + pypdf page-1 extract contains PA3YVMJ3YVDZ; 0 `[LIVE]`/`[FILL]` markers, 12 pages |
+| Keys live (independent, A.152) | PASS | GET /v2/account → PA3Y…YVDZ ACTIVE, equity 100000, 0 positions/orders/fills (pre-14:10Z Wednesday session — expected) |
+| Real account on slide 1 | PASS | slides-final.html line 66 + pypdf page-1 extract contains PA3Y…YVDZ; 0 `[LIVE]`/`[FILL]` markers, 12 pages |
 | Build reads account from API, not memory | PASS | tools/build_video.sh fetches /v2/account, asserts status==ACTIVE, aborts otherwise (commit fe99f49, pushed) |
 | Runtime < 5:00 | PASS | ffprobe 193.34s (3:13) |
 | Container | PASS | h264 1280x720 + AAC, 4.67 MB |

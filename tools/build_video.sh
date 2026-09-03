@@ -8,7 +8,7 @@ CHROM="chromium --headless=new --no-sandbox --disable-gpu --hide-scrollbars"
 VOICE="en-US-AndrewMultilingualNeural"
 
 # ---- 1. honest slide variant ----
-# 2026-09-02: keys verified live (PA3YVMJ3YVDZ ACTIVE). Read the REAL account
+# 2026-09-02: keys verified live (PA3Y…YVDZ ACTIVE). Read the REAL account
 # number from the API at build time — never from memory, never committed
 # (build/ is gitignored; slide 12's "no account ids in the tree" stays true).
 LIVE_ACCT=$(python3 - <<'PY'
