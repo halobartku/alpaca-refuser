@@ -9,7 +9,9 @@ Deliverables: `build/slides-final.mp4` + `build/slides-final.pdf` (build/ is
 gitignored; the full account id never enters the git tree — tracked files carry
 only the partial `PA3Y…YVDZ`, slide 12 claim intact. Found via cowork review
 2026-09-03; previously this receipt itself quoted the full id, contradicting
-its own claim).
+its own claim). History note: the full id exists in commits before 6ffd642 —
+it is a paper-trading id (no funds); the slide-83 claim is about the tree,
+which is clean. History was deliberately NOT rewritten mid-hackathon.
 
 | Check | Result | Evidence |
 |---|---|---|
