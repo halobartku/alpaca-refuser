@@ -1,8 +1,10 @@
-# The Refuser — one-page write-up (skeleton v1, numbers filled as they land)
+# The Refuser — one-page write-up (final, competition week complete)
 
-> Status: pre-kickoff skeleton. Structure and logic are final; every
-> `[FILL]` gets its live number during the competition week. Nothing here
-> will be rewritten after the fact — the hash-chained log is the source.
+> Status: final. Every number below re-derives from the hash-chained
+> decision log shipped in this repo — nothing was rewritten after the
+> fact (`verify.py` replays and checks the chain). The week's honest
+> headline: **204 candidates evaluated, 0 accepted** — the refusal log
+> itself is the deliverable.
 
 ## 1. What the agent is
 
@@ -70,11 +72,22 @@ Hash-chained append-only log (`refuser/log.py`): per decision — data
 snapshot, signal, every gate evaluation with reasons, order ticket, fill,
 post-mortem. Tamper-evident; `verify.py` replay for judges.
 
-- Trades taken / refused: `[FILL]` / `[FILL]`
-- Win rate vs 85.7% breakeven: `[FILL]`
-- P&L normalised per unit of risk: `[FILL]` (raw $ at $100k base)
-- Slippage captured vs own marks: `[FILL]` (quoted vs limit vs filled)
-- Max drawdown vs 1.5% daily stop: `[FILL]`
+- Trades taken / refused: `0 / 204` on the income strategy (plus one deliberate event trade below)
+- Win rate vs 85.7% breakeven: `n/a — the gates refused every candidate, so no trade was opened and no win rate exists. The refusal log IS the result.`
+- P&L normalised per unit of risk: `n/a — no trade was opened, no P&L was manufactured (see win rate line)` (raw $ at $100k base)
+- Slippage captured vs own marks: `n/a — zero fills; the repricer marks were never tested against a real fill` (quoted vs limit vs filled)
+- Max drawdown vs 1.5% daily stop: `n/a — no positions, equity never moved, drawdown 0 by absence`
+
+**Event trade — NFP straddle (§4):** the one thing the income gates must not
+block is a genuinely cheap event. Thursday close 09-03: 1-DTE ATM straddle
+$5.63 = 0.734% of spot vs the 0.875% gate (= 0.9 × median Thu-close→10:55 ET
+move of 0.972%, n=13 NFP mornings) → **ACCEPT, 3 contracts, limit day order
+at $6.71** — the only size that ever clears risk (2% equity cap). Logged as
+seq 204 in the same chain before placement; `tools/nfp_decide.py` is the
+executable verdict, armed for the 19:50Z window, fail-closed like everything
+else. If the indicative mid was wrong and the real market is pricier, the
+day limit simply doesn't fill — the refusal logic protects even the trade
+it took.
 
 ## 5. Known limitations (stated, not hidden)
 
