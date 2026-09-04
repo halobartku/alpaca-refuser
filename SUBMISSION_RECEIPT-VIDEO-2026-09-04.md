@@ -13,7 +13,7 @@ Deliverables: `build/slides-final.mp4` (3:58, 5.97 MB) + `build/slides-final.pdf
 
 | Number | Source |
 |---|---|
-| Account PA3YVMJ3YVDZ, ACTIVE, equity 99,934.74 | GET /v2/account at build 00:40Z, script asserts status==ACTIVE |
+| Account PA3Y...YVDZ, ACTIVE, equity 99,934.74 | GET /v2/account at build 00:40Z, script asserts status==ACTIVE |
 | 204 entry REFUSE / 0 taken | counted live from live-decisions.jsonl (event=evaluate_entry) |
 | seq 205 ACCEPT, 5 ct, fill $3.93, $1,965 = 1.97% | journal seq 205 (order HTTP 200 id=f4f6c9ef) + fill verified vs order API 20:40Z 09-03 (A.163); position re-verified live at build (5× SPY 09-04 773 C + P) |
 | 206 evaluated / 204 refused (slide 5) | 204 entry evals + 2 nfp_gate evals = 206 candidates through gates |
