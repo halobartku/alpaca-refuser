@@ -58,7 +58,8 @@ PLAN = [
     ("s3a", f"{F}/slide_06.png", f"{TMP}/s3a.mp3", 0.15),
     ("s3b", f"{F}/slide_07.png", f"{TMP}/s3b.mp3", 0.6),
     ("s4", f"{F}/slide_10.png", f"{A}/s4.mp3", 0.6),
-    ("s5", f"{F}/slide_12.png", f"{A}/s5.mp3", 2.0),
+    ("s5", f"{F}/slide_11.png", f"{A}/s5.mp3", 0.6),
+    ("s5b", f"{F}/slide_12.png", f"{A}/s5b.mp3", 2.0),
 ]
 for tag, img, aud, tail in PLAN:
     segment(img, aud, f"{TMP}/{tag}.mp4", tail)
