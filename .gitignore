@@ -20,3 +20,4 @@ rehearsal-decisions.jsonl
 smoke_ctx.json
 smoke_order_id.txt
 smoke_result_*.jsonl
+*.bak-*

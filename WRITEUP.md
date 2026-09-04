@@ -93,10 +93,10 @@ the trade it took. (The morning read showed $5.63/0.734%; by the close the
 straddle had cheapened to $3.90 — the gate was evaluated on the close number,
 not the morning one.)
 
-**Close-out (R2, Fri 10:30–10:55 ET):** pre-authorised liquidation of every
+**Close-out (R2, Fri 10:30 to 10:55 ET):** pre-authorised liquidation of every
 option leg marketable-through, hard-flat by 10:55 ET so judged P&L = realized
 P&L. Both legs closed inside the window: call 5 @ $0.18 (14:45:04Z), put
-5 @ $2.97 (14:48:04Z). **Straddle realized: −$3.90** (proceeds $1,575 vs
+5 @ $2.97 (14:48:04Z). **Straddle realized: −$390** (proceeds $1,575 vs
 $1,965 debit). Final equity **$99,609.34** (−0.39% on the week; the income
 strategy contributed zero fills by design). Chain head 39730ffe…, 216
 entries, `verify.py`-replayable.
