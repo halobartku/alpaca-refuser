@@ -76,18 +76,21 @@ def close_ticket(symbol: str, net_qty: int, ref_price: float) -> dict:
         limit = round(ref_price + AGGRESSION, 2)
     else:
         limit = round(max(ref_price - AGGRESSION, 0.01), 2)
+    # A 'simple' order carries symbol and side at the TOP level. Putting them in
+    # a legs[] array is the mleg shape, and sending it with order_class 'simple'
+    # made Alpaca answer 422 'either side or position_intent must be set' at
+    # 14:30:00Z on 2026-09-04, with the straddle still open. The fixture passed
+    # throughout, because the fake broker REQUIRED a legs[] key: it enforced our
+    # own shape rather than the vendor's. Fixed in both places.
     return {
+        "symbol": symbol,
         "type": "limit",
         "time_in_force": "day",
         "order_class": "simple",
         "qty": str(abs(net_qty)),
+        "side": side,
+        "position_intent": intent,
         "limit_price": f"{limit:.2f}",
-        "legs": [{
-            "symbol": symbol,
-            "ratio_qty": "1",
-            "side": side,
-            "position_intent": intent,
-        }],
         # metadata for the audit layer (not sent to the API)
         "_meta": {"kind": "r2-close", "ref_price": ref_price, "limit": limit},
     }
@@ -167,7 +170,7 @@ def liquidate_all(broker: BaseBroker, positions: list, snapshot_fn,
             # reprice through the market
             snap2 = snapshot_fn([sym]).get(sym) or {}
             ref2 = _walkable_ref(snap2)
-            side = ticket["legs"][0]["side"]
+            side = ticket.get("side") or ticket["legs"][0]["side"]
             if side == "buy":
                 new_lim = round(ref2 + AGGRESSION + 0.01 * (walk + 1), 2)
             else:

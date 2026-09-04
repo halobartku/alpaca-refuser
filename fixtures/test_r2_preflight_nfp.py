@@ -106,16 +106,20 @@ class TestLegInventory(unittest.TestCase):
 class TestCloseTicket(unittest.TestCase):
     def test_short_leg_buys_back_through_ask(self):
         t = liquidate.close_ticket("SPY260918P00750000", -1, 2.90)
-        self.assertEqual(t["legs"][0]["side"], "buy")
-        self.assertEqual(t["legs"][0]["position_intent"], "buy_to_close")
+        # top level, not legs[]: a simple order carries symbol and side there,
+        # and asserting the legs[] shape here is what kept the 422 of 14:30Z green
+        self.assertEqual(t["side"], "buy")
+        self.assertEqual(t["position_intent"], "buy_to_close")
+        self.assertNotIn("legs", t)
         self.assertEqual(t["order_class"], "simple")
         self.assertEqual(t["qty"], "1")
         self.assertEqual(float(t["limit_price"]), 2.95)  # mid + 0.05
 
     def test_long_leg_sells_through_bid(self):
         t = liquidate.close_ticket("SPY260918P00737000", 2, 1.70)
-        self.assertEqual(t["legs"][0]["side"], "sell")
-        self.assertEqual(t["legs"][0]["position_intent"], "sell_to_close")
+        self.assertEqual(t["side"], "sell")
+        self.assertEqual(t["position_intent"], "sell_to_close")
+        self.assertNotIn("legs", t)
         self.assertEqual(float(t["limit_price"]), 1.65)  # mid - 0.05
 
     def test_zero_qty_refuses(self):
@@ -186,7 +190,7 @@ class TestLiquidateAll(unittest.TestCase):
         self.assertEqual(rep["failed"], [])
         # buy-back of the short at through-the-ask limit
         buys = [o for o in b.placed_orders
-                if o["legs"][0]["position_intent"] == "buy_to_close"]
+                if o["position_intent"] == "buy_to_close"]
         self.assertEqual(float(buys[0]["limit_price"]), 2.95)
 
     def test_unfilled_leg_raises_r2_failure(self):

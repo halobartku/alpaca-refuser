@@ -178,8 +178,12 @@ class FixtureBroker(BaseBroker):
         return {"suspend_trade": bool(value)}
 
     def place_closing_order(self, ticket: dict):
-        if not ticket.get("legs"):
-            raise BrokerError("closing ticket has no legs")
+        # Accept BOTH live shapes: a simple order carries symbol/side at the top
+        # level, an mleg order carries legs[]. Demanding legs[] here is what let
+        # the 422 of 2026-09-04 14:30Z pass every fixture: the fake enforced our
+        # shape, not Alpaca's.
+        if not ticket.get("legs") and not (ticket.get("symbol") and ticket.get("side")):
+            raise BrokerError("closing ticket has neither legs nor symbol+side")
         rec = {k: v for k, v in ticket.items() if not k.startswith("_")}
         rec["status"] = getattr(self, "_next_close_status", "filled")
         rec["id"] = f"fxc-{len(self.placed_orders) + 1:04d}"

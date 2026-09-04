@@ -169,15 +169,16 @@ check("r2_logged_ok", B(r2)["event"] == "r2_liquidation" and B(r2)["ok"])
 
 # closes landed at the broker as marketable tickets (FixtureBroker strips
 # _meta exactly like the live API would — identify closes by shape)
+# simple orders carry position_intent at the TOP level; reading it from legs[]
+# here is what kept the 422 of 2026-09-04 14:30Z invisible to every fixture
 closes = [o for o in broker.placed_orders
           if o.get("order_class") == "simple"
-          and o.get("legs")
-          and o["legs"][0].get("position_intent") in
+          and o.get("position_intent") in
           ("buy_to_close", "sell_to_close")
           and o.get("time_in_force") == "day"]
 check("r2_tickets_at_broker", len(closes) == 2)
 buy = next(o for o in closes
-           if o["legs"][0]["position_intent"] == "buy_to_close")
+           if o["position_intent"] == "buy_to_close")
 exp_mid = broker.get_option_snapshot(SYM_SHORT)["mid"]
 check("r2_buyback_through_ask",
       float(buy["limit_price"]) == round(exp_mid + liquidate.AGGRESSION, 2),
