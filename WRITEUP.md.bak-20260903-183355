@@ -1,10 +1,8 @@
-# The Refuser — one-page write-up (final, competition week complete)
+# The Refuser — one-page write-up (skeleton v1, numbers filled as they land)
 
-> Status: final. Every number below re-derives from the hash-chained
-> decision log shipped in this repo — nothing was rewritten after the
-> fact (`verify.py` replays and checks the chain). The week's honest
-> headline: **204 candidates evaluated, 0 accepted** — the refusal log
-> itself is the deliverable.
+> Status: pre-kickoff skeleton. Structure and logic are final; every
+> `[FILL]` gets its live number during the competition week. Nothing here
+> will be rewritten after the fact — the hash-chained log is the source.
 
 ## 1. What the agent is
 
@@ -72,34 +70,11 @@ Hash-chained append-only log (`refuser/log.py`): per decision — data
 snapshot, signal, every gate evaluation with reasons, order ticket, fill,
 post-mortem. Tamper-evident; `verify.py` replay for judges.
 
-- Trades taken / refused: `0 / 204` on the income strategy (plus one deliberate event trade below)
-- Win rate vs 85.7% breakeven: `n/a — the gates refused every candidate, so no trade was opened and no win rate exists. The refusal log IS the result.`
-- P&L normalised per unit of risk: `n/a — no trade was opened, no P&L was manufactured (see win rate line)` (raw $ at $100k base)
-- Slippage captured vs own marks: `n/a — zero fills; the repricer marks were never tested against a real fill` (quoted vs limit vs filled)
-- Max drawdown vs 1.5% daily stop: `n/a — no positions, equity never moved, drawdown 0 by absence`
-
-**Event trade — NFP straddle (§4):** the one thing the income gates must not
-block is a genuinely cheap event. Thursday close 09-03, executed live at
-19:50Z: 1-DTE ATM straddle (SPY 773 puts + calls, 09-04 expiry) mid **$3.90
-= 0.504% of spot 773.44** vs the 0.875% gate (= 0.9 × median Thu-close→10:55 ET
-move of 0.972%, n=13 NFP mornings) → **ACCEPT, 5 contracts at the 2% equity
-cap ($1,965 debit = 1.97% of equity), limit day order at $3.95, filled
-at $3.93** (limit ≤ min(mid+0.05, cutoff $6.77)).
-Logged as seq 205 in the same chain before placement; `tools/nfp_decide.py`
-is the executable verdict, armed for the 19:30-19:59Z window, fail-closed
-like everything else. If the indicative mid was wrong and the real market is
-pricier, the day limit simply doesn't fill — the refusal logic protects even
-the trade it took. (The morning read showed $5.63/0.734%; by the close the
-straddle had cheapened to $3.90 — the gate was evaluated on the close number,
-not the morning one.)
-
-**Close-out (R2, Fri 10:30–10:55 ET):** pre-authorised liquidation of every
-option leg marketable-through, hard-flat by 10:55 ET so judged P&L = realized
-P&L. Both legs closed inside the window: call 5 @ $0.18 (14:45:04Z), put
-5 @ $2.97 (14:48:04Z). **Straddle realized: −$3.90** (proceeds $1,575 vs
-$1,965 debit). Final equity **$99,609.34** (−0.39% on the week; the income
-strategy contributed zero fills by design). Chain head 39730ffe…, 216
-entries, `verify.py`-replayable.
+- Trades taken / refused: `[FILL]` / `[FILL]`
+- Win rate vs 85.7% breakeven: `[FILL]`
+- P&L normalised per unit of risk: `[FILL]` (raw $ at $100k base)
+- Slippage captured vs own marks: `[FILL]` (quoted vs limit vs filled)
+- Max drawdown vs 1.5% daily stop: `[FILL]`
 
 ## 5. Known limitations (stated, not hidden)
 
